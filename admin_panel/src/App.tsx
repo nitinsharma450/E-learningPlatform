@@ -1,5 +1,6 @@
 import { BrowserRouter, Route, Routes } from "react-router"
-import Dashboard from "./component/dashboard"
+import Dashboard from "./pages/Dashboard"
+import Layout from "./component/Layout"
 
 
 function App() {
@@ -9,7 +10,13 @@ function App() {
 <BrowserRouter>
 
 <Routes>
-<Route path="/dasbboard" element={<Dashboard />} />
+<Route element={<Layout />}>
+<Route path="/dashboard" element={<Dashboard />} />
+
+</Route>
+
+
+
 
 
 </Routes>
