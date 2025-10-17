@@ -29,7 +29,7 @@ export default function Sidebar() {
         <span> Student</span>
       </NavLink>
 
-      <NavLink to={''}  className={` mt-5 flex items-center gap-3 p-3 rounded-lg font-medium ${location.pathname==='/couses'? 'text-blue-600 bg-white': 'text-gray-600 hover:bg-gray-100'}`}>
+      <NavLink to={'/teacher'}  className={` mt-5 flex items-center gap-3 p-3 rounded-lg font-medium ${location.pathname==='/couses'? 'text-blue-600 bg-white': 'text-gray-600 hover:bg-gray-100'}`}>
         <GiTeacher size={25} color="blue" />  
         <span> Teachers</span>
       </NavLink>

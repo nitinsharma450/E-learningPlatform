@@ -1,13 +1,24 @@
-import express from 'express'
-import dotenv from 'dotenv'
-import { DB_connect } from './connection.js';
+import express from "express";
+import dotenv from "dotenv";
+import cors from "cors";
 
-dotenv.config()
+import { adminRouter } from "./src/routes/adminRoutes.js";
+import { connectDB } from "./connection.js";
 
-const app=express();
+dotenv.config();
+
+const app = express();
 app.use(express.json());
+app.use(cors());
 
+// Routes
+app.use("api/admin", adminRouter);
 
-app.listen(process.env.PORT,()=>{
-    console.log(`server is running on port ${process.env.PORT}`)
-})
+// Connect to DB, then start server
+const PORT = process.env.PORT;
+
+connectDB().then(() => {
+  app.listen(PORT, () => {
+    console.log(`🚀 Server running on port ${PORT}`);
+  });
+});
