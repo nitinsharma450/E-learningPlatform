@@ -12,6 +12,7 @@ if (!admin.apps.length) {
 export default async function AdminMiddlewares(req, res, next) {
   try {
     let header = req.headers['authorization'];
+    console.log(header)
 
     if (!header || typeof header !== 'string') {
       return res.status(401).json({ error: "Authorization header missing" });

@@ -12,7 +12,7 @@ app.use(express.json());
 app.use(cors());
 
 // Routes
-app.use("api/admin", adminRouter);
+app.use("/api/admin", adminRouter);
 
 // Connect to DB, then start server
 const PORT = process.env.PORT;

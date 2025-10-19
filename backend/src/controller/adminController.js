@@ -20,4 +20,21 @@ export class adminController {
             });
         }
     }
+
+    static async count(req,res){
+        console.log('hello')
+
+        try {
+            
+      let count=await Teacher.countDocument();
+      if(count.length>0){
+        res.send({message:'success',status:200,data:count})
+      }
+
+
+        } 
+        catch (error) {
+            res.send({message:error.message,status:500})
+        }
+    }
 }
