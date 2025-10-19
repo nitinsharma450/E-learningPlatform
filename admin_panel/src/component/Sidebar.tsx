@@ -1,12 +1,26 @@
-import { useLocation } from "react-router";
+import { useLocation, useNavigate } from "react-router";
 import { RxDashboard } from "react-icons/rx";
 import { NavLink } from "react-router";
 import { PiStudentFill } from "react-icons/pi";
 
 import { GiTeacher } from "react-icons/gi";
+import { IoMdLogOut } from "react-icons/io";
+import { ApiConfigs } from "../configs/ApiConfigs";
 
 export default function Sidebar() {
   const location = useLocation();
+  const navigate=useNavigate()
+
+
+async function logout() {
+  try {
+    localStorage.removeItem(ApiConfigs.TOKEN_CREDENTIAL);
+    navigate('/');
+  } catch (error) {
+    console.error("Logout failed:", error);
+  }
+}
+
 
   return (
     <div className=" flex flex-col w-64 h-screen bg-white shadow-lg p-5">
@@ -33,6 +47,16 @@ export default function Sidebar() {
         <GiTeacher size={25} color="blue" />  
         <span> Teachers</span>
       </NavLink>
+
+<div 
+  className="flex items-center gap-2 px-4 py-2 rounded-xl mt-50
+             bg-red-500 text-white font-medium shadow-md 
+             hover:bg-red-600 active:scale-95 transition-all cursor-pointer" onClick={logout}>
+  <IoMdLogOut size={20} />
+  <p>Logout</p>
+</div>
+
+      
 
         
     </div>

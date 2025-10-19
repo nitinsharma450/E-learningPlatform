@@ -1,3 +1,4 @@
+import { TbBrandOkRu } from "react-icons/tb";
 import { ApiConfigs } from "../configs/ApiConfigs";
 
 export class AuthenticationService{
@@ -9,6 +10,7 @@ export class AuthenticationService{
 
     static async getToken(){
          let token=localStorage.getItem(ApiConfigs.TOKEN_CREDENTIAL)
+       
          return token;
     }
 }

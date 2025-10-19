@@ -1,6 +1,36 @@
+import { useEffect, useState } from "react";
 import { FaGraduationCap, FaUsers, FaUserPlus } from "react-icons/fa";
+import { AuthenticationService } from "../services/AuthenticationService";
+import { Api } from "../services/ApiService";
 
 export default function Dashboard() {
+
+  const [numberOfTeacher,setNumberOfTeacher]=useState<Number>(0);
+
+ async function countTeacher(){
+
+  if(await AuthenticationService.isAuthenticated()){
+    console.log('response')
+    try {
+       let response=await Api('teacher/count')
+       console.log(response)
+       if(response){
+        setNumberOfTeacher(response.data)
+       }
+    } catch (error) {
+      console.log(error)
+    }
+     
+      
+  }
+
+ }
+
+ useEffect(()=>{
+countTeacher()
+ },[])
+
+
   return (
     <div className="p-10 m-10">
       {/* Header */}
@@ -16,7 +46,7 @@ export default function Dashboard() {
         <div className="flex justify-between items-center p-6 rounded-xl shadow-md border border-gray-200 bg-white">
           <div>
             <p className="text-sm font-medium text-gray-600">Total Teachers</p>
-            <p className="text-2xl font-bold mt-2">1</p>
+            <p className="text-2xl font-bold mt-2">{numberOfTeacher}</p>
           </div>
           <FaGraduationCap className="text-gray-500" size={24} />
         </div>

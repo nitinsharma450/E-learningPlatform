@@ -30,10 +30,11 @@ export default function Login() {
       const result = await signInWithPopup(auth, googleProvider);
       const user = result.user;
       const token = await user.getIdToken();
-      console.log("User:", user);
-      console.log("Token:", token);
+      // console.log("User:", user);
+      // console.log("Token:", token);
 
-      let credential={token:token,userDetails:user}
+      let credential={token,userDetails:user}
+      console.log('credential',credential)
 
       localStorage.setItem(`${ApiConfigs.TOKEN_CREDENTIAL}`,JSON.stringify(credential))
       navigate('/dashboard')
