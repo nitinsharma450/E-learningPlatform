@@ -5,22 +5,12 @@ import { PiStudentFill } from "react-icons/pi";
 
 import { GiTeacher } from "react-icons/gi";
 import { IoMdLogOut } from "react-icons/io";
-import { ApiConfigs } from "../configs/ApiConfigs";
+import logout from "./Logout";
+import { FaBook } from "react-icons/fa";
 
 export default function Sidebar() {
   const location = useLocation();
   const navigate=useNavigate()
-
-
-async function logout() {
-  try {
-    localStorage.removeItem(ApiConfigs.TOKEN_CREDENTIAL);
-    navigate('/');
-  } catch (error) {
-    console.error("Logout failed:", error);
-  }
-}
-
 
   return (
     <div className=" flex flex-col w-64 h-screen bg-white shadow-lg p-5">
@@ -38,20 +28,26 @@ async function logout() {
         <span>Dashboard</span>
       </NavLink>
 
-      <NavLink to={''}  className={` mt-5 flex items-center gap-3 p-3 rounded-lg font-medium ${location.pathname==='/couses'? 'text-blue-600 bg-white': 'text-gray-600 hover:bg-gray-100'}`}>
-        <PiStudentFill size={25} color="blue" /> 
+      <NavLink to={''}  className={` mt-5 flex items-center gap-3 p-3 rounded-lg font-medium ${location.pathname==='/student'? 'text-blue-600 bg-white': 'text-gray-600 hover:bg-gray-100'}`}>
+        <PiStudentFill size={25}  /> 
         <span> Student</span>
       </NavLink>
 
-      <NavLink to={'/teacher'}  className={` mt-5 flex items-center gap-3 p-3 rounded-lg font-medium ${location.pathname==='/couses'? 'text-blue-600 bg-white': 'text-gray-600 hover:bg-gray-100'}`}>
-        <GiTeacher size={25} color="blue" />  
+      <NavLink to={'/teacher'}  className={` mt-5 flex items-center gap-3 p-3 rounded-lg font-medium ${location.pathname==='/teacher'? 'text-blue-600 bg-white': 'text-gray-600 hover:bg-gray-100'}`}>
+        <GiTeacher size={25}  />  
         <span> Teachers</span>
+      </NavLink>
+
+
+       <NavLink to={'/courses'}  className={` mt-5 flex items-center gap-3 p-3 rounded-lg font-medium ${location.pathname==='/courses'? 'text-blue-600 bg-white': 'text-gray-600 hover:bg-gray-100'}`}>
+        <FaBook size={25}/> 
+        <span> Courses</span>
       </NavLink>
 
 <div 
   className="flex items-center gap-2 px-4 py-2 rounded-xl mt-50
              bg-red-500 text-white font-medium shadow-md 
-             hover:bg-red-600 active:scale-95 transition-all cursor-pointer" onClick={logout}>
+             hover:bg-red-600 active:scale-95 transition-all cursor-pointer" onClick={()=>logout(navigate)}>
   <IoMdLogOut size={20} />
   <p>Logout</p>
 </div>

@@ -7,15 +7,15 @@ import { ToastContainer } from "react-toastify";
 import Login from "./auth/Login";
 import { lazy, Suspense } from "react";
 import Spinner from "./component/Spinner";
-import TeacherAddListing from "./pages/TeacherAddListing";
+import PrivateRoute from "./component/PrivateRoute";
 
-// const TeacherAddListing = lazy(() => import("./pages/TeacherAddListing"));
+const TeacherAddListing = lazy(() => import("./pages/TeacherAddListing"));
+const CoursesAddListing=lazy(()=>import('./pages/CoursesAddListing'))
 
 function App() {
   return (
-
-<>
- <ToastContainer
+    <>
+      <ToastContainer
         position="top-right" // top-left, bottom-right, etc.
         autoClose={3000} // auto close in ms
         hideProgressBar={false}
@@ -27,28 +27,43 @@ function App() {
         pauseOnHover
       />
 
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<Login />} />
 
-
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<Login />} />
-
-        <Route element={<Layout />}>
-          <Route path="/dashboard" element={<Dashboard />} />
-          {/* <Route
-            path="/teacher"
+          <Route
             element={
-              <Suspense fallback={<Spinner />}>
-                <TeacherAddListing />
-              </Suspense>
+              <PrivateRoute>
+                <Layout />
+              </PrivateRoute>
             }
-          /> */}
+          >
+            <Route
+              path="/dashboard"
+              element={
+                <PrivateRoute>
+                  <Dashboard />{" "}
+                </PrivateRoute>
+              }
+            />
 
-          <Route path="/teacher" element={<TeacherAddListing />} />
-        </Route>
-      </Routes>
-    </BrowserRouter>
+            <Route
+              path="/teacher"
+              element={
+                <Suspense fallback={<Spinner />}>
+                  <PrivateRoute>
+                    <TeacherAddListing />
+                  </PrivateRoute>
+                </Suspense>
+              }
+            />
 
+            <Route path="/courses" element={<Suspense fallback={<Spinner />}> <CoursesAddListing />  </Suspense>} />
+          </Route>
+
+          
+        </Routes>
+      </BrowserRouter>
     </>
   );
 }

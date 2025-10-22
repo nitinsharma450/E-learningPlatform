@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AiOutlinePlus } from "react-icons/ai";
 import { IoClose } from "react-icons/io5";
 import { AuthenticationService } from "../services/AuthenticationService";
@@ -9,6 +9,8 @@ import { useNavigate } from "react-router";
 export default function TeacherAddListing() {
   const [AddTeacherModel, showAddTeacherModel] = useState(false);
   const [teacherData,setAddTeacherData]=useState<any>({})
+  const[showTeacherdetails,setTeacherDetails]=useState<any>([])
+  const[loading,setLoading]=useState(false)
   let navigate=useNavigate()
 
 
@@ -39,7 +41,24 @@ export default function TeacherAddListing() {
   }
 }
 
+async function searchTeacher(){
+
+  if(await AuthenticationService.isAuthenticated()){
+    setLoading(true)
+    let response=await Api('teacher/search')
+    if(response && response.data){
+      setTeacherDetails(response.data)
+    }
+  }
+  setLoading(false)
+}
+
+useEffect(()=>{
+searchTeacher()
+},[])
+
   return (
+    <>
     <div className="p-10">
       {/* Header Section */}
       <div className="flex items-center justify-between">
@@ -136,6 +155,37 @@ export default function TeacherAddListing() {
         </div>
       )}
     </div>
+
+     <div className="p-10">
+        <h2 className="text-2xl font-bold mb-4">All Teachers</h2>
+
+        {loading ? (
+          <div className="text-gray-500 text-center">Loading teachers...</div>
+        ) : showTeacherdetails.length === 0 ? (
+          <div className="text-gray-400 text-center">No teachers found.</div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {showTeacherdetails.map((teacher:any) => (
+              <div
+                key={teacher._id}
+                className="bg-white shadow-md rounded-lg p-4 hover:shadow-lg transition"
+              >
+               <div className="w-12 h-12 flex items-center justify-center bg-blue-400 text-black font-bold text-2xl rounded-full">
+  {teacher.name.charAt(0).toUpperCase()}
+</div>
+
+                <h3 className="text-xl font-semibold">{teacher.name}</h3>
+                <p className="text-gray-500">Subject: {teacher.subject}</p>
+                <p className="text-gray-400 text-sm mt-1">
+                  Username: {teacher.username}
+                </p>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+</>
   );
 }
 

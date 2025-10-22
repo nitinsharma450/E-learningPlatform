@@ -7,7 +7,7 @@ export async function Api(
   body: any = {}
 ): Promise<false | any> {
   const token = await AuthenticationService.getToken();
-  console.log('token',token)
+  // console.log('token',token)
 
   try {
     const headers: any = {

@@ -5,7 +5,17 @@ import { adminController } from '../controller/adminController.js'
 export const adminRouter=new express.Router()
 
 
-adminRouter.use(AdminMiddlewares)
+// adminRouter.use(AdminMiddlewares)
 
-adminRouter.post('/teacher/add',adminController.create)
-adminRouter.post('/teacher/count',adminController.count)
+//teacher
+adminRouter.post('/teacher/add',adminController.teacherCreate)
+adminRouter.post('/teacher/count',adminController.teacherCount)
+adminRouter.post('/save/credentials',adminController.teacherCredentialSave)
+adminRouter.post('/profile/search',adminController.searchProfile)
+adminRouter.post('/teacher/search',adminController.searchTeacher)
+
+//courses
+
+adminRouter.post('/course/add',adminController.courseCreate)
+adminRouter.post('/course/searchAll',adminController.search)
+adminRouter.post('/course/filter',adminController.filter)

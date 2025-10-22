@@ -3,19 +3,21 @@ import { getAuth, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { useEffect, useState } from "react";
 import { FcGoogle } from "react-icons/fc";
 import { useNavigate } from "react-router";
-import {ApiConfigs} from '../configs/ApiConfigs'
-
+import { ApiConfigs } from "../configs/ApiConfigs";
+import { AuthenticationService } from "../services/AuthenticationService";
+import { Api } from "../services/ApiService";
 
 export default function Login() {
   const [loginForm, setLoginForm] = useState<any>({});
   const [error, setError] = useState<any>({});
-  let navigate=useNavigate();
+  let navigate = useNavigate();
 
+  // ✅ Firebase config (fixed bucket name)
   const firebaseConfig = {
     apiKey: "AIzaSyAKFvqMu7v9Uv_pbRh_FpBc15hF8dWKMJc",
     authDomain: "adminpanel-c7fc8.firebaseapp.com",
     projectId: "adminpanel-c7fc8",
-    storageBucket: "adminpanel-c7fc8.firebasestorage.app",
+    storageBucket: "adminpanel-c7fc8.appspot.com",
     messagingSenderId: "5738630187",
     appId: "1:5738630187:web:ea9c250204b48acbda2e6e",
     measurementId: "G-BYS0NS8NTM",
@@ -25,63 +27,84 @@ export default function Login() {
   const auth = getAuth(app);
   const googleProvider = new GoogleAuthProvider();
 
+  // ✅ Save user details to backend
+  async function saveUserDetails() {
+    if (await AuthenticationService.isAuthenticated()) {
+      console.log("Saving user details...");
+      const response = localStorage.getItem(ApiConfigs.TOKEN_CREDENTIAL);
+      const parsedData = response ? JSON.parse(response) : null;
+
+      if (parsedData && parsedData.userDetails) {
+        try {
+          await Api("save/credentials", parsedData.userDetails);
+          
+        } catch (err) {
+          console.error("Error saving user details:", err);
+        }
+      }
+    }
+  }
+
+  // ✅ Google login handler
   async function handleGoogleLogin() {
     try {
       const result = await signInWithPopup(auth, googleProvider);
       const user = result.user;
       const token = await user.getIdToken();
-      // console.log("User:", user);
-      // console.log("Token:", token);
 
-      let credential={token,userDetails:user}
-      console.log('credential',credential)
+      const credential = { token, userDetails: user };
+      localStorage.setItem(ApiConfigs.TOKEN_CREDENTIAL, JSON.stringify(credential));
 
-      localStorage.setItem(`${ApiConfigs.TOKEN_CREDENTIAL}`,JSON.stringify(credential))
-      navigate('/dashboard')
-
+      await saveUserDetails(); // save immediately after login
+      navigate("/dashboard");
     } catch (err) {
       console.error("Google login error:", err);
     }
   }
 
+  // ✅ Manual email/password validation
   function handleLogin() {
-    // Create a temporary error object
-    const tempError: any = {};
+    const tempError:{email?:String,password?:String} = {};
 
-    // Email validation
     if (!loginForm.email) {
       tempError.email = "Email is required";
     } else if (!/\S+@\S+\.\S+/.test(loginForm.email)) {
-      tempError.email = "@ is required";
+      tempError.email = "Enter a valid email address";
     }
 
-    // Password validation
     if (!loginForm.password) {
       tempError.password = "Password is required";
     } else if (loginForm.password.length < 6) {
       tempError.password = "Password must be at least 6 characters";
     }
 
-    // Set errors
     setError(tempError);
 
-    // Proceed if no errors
     if (Object.keys(tempError).length === 0) {
       console.log("Login successful", loginForm);
-      // Call backend login API here
+      // TODO: Call backend login API here for manual auth
     }
   }
 
-  useEffect(()=>{
-    setError({})
+  // ✅ Clear validation errors when form changes
+  useEffect(() => {
+    setError({});
+  }, [loginForm]);
 
-  },[loginForm])
+  // ✅ On mount, check and save user details if already logged in
+  useEffect(() => {
+    const response = localStorage.getItem(ApiConfigs.TOKEN_CREDENTIAL);
+    if (response) {
+      saveUserDetails();
+    }
+  }, []);
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black/40">
       <div className="bg-white w-[400px] p-10 rounded-xl shadow-lg">
         <h2 className="text-2xl p-5 font-semibold text-center mb-2">Log in</h2>
 
+        {/* ✅ Google Login */}
         <button
           onClick={handleGoogleLogin}
           className="w-full border cursor-pointer rounded-md p-2 flex items-center justify-center gap-2 mb-3 hover:bg-gray-100"
@@ -96,6 +119,7 @@ export default function Login() {
           <hr className="flex-1" />
         </div>
 
+        {/* ✅ Manual Login Form */}
         <div className="space-y-3 m-3">
           <div>
             <input

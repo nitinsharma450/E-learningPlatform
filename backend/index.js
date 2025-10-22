@@ -4,12 +4,16 @@ import cors from "cors";
 
 import { adminRouter } from "./src/routes/adminRoutes.js";
 import { connectDB } from "./connection.js";
+import fileUpload from 'express-fileupload'
+import { ServerConfigs } from "./src/configs/ServerConfigs.js";
 
 dotenv.config();
 
 const app = express();
 app.use(express.json());
 app.use(cors());
+app.use(fileUpload())
+app.use(ServerConfigs.PublicRoute, express.static(ServerConfigs.PublicFolder));
 
 // Routes
 app.use("/api/admin", adminRouter);
