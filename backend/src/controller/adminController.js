@@ -223,6 +223,17 @@ static async filter(req, res) {
   }
 }
 
+static async countCoures(req,res){
+ try {
+  let count=await Course.countDocuments()
+  if(count>0){
+    return res.status(200).send({message:"success",data:count})
+  }
+ } catch (error) {
+  return res.status(500).send({error:error.message})
+ }
+}
+
 
 }
 
