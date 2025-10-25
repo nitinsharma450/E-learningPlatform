@@ -20,3 +20,7 @@ adminRouter.post('/course/add',adminController.courseCreate)
 adminRouter.post('/course/searchAll',adminController.search)
 adminRouter.post('/course/filter',adminController.filter)
 adminRouter.post('/course/count',adminController.countCoures)
+
+//student
+
+adminRouter.post('/student/count',adminController.countStudent)

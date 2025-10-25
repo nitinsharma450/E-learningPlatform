@@ -6,6 +6,7 @@ import { adminRouter } from "./src/routes/adminRoutes.js";
 import { connectDB } from "./connection.js";
 import fileUpload from 'express-fileupload'
 import { ServerConfigs } from "./src/configs/ServerConfigs.js";
+import { studentRouter } from "./src/routes/studentRoutes.js";
 
 dotenv.config();
 
@@ -17,6 +18,7 @@ app.use(ServerConfigs.PublicRoute, express.static(ServerConfigs.PublicFolder));
 
 // Routes
 app.use("/api/admin", adminRouter);
+app.use('/api/student',studentRouter)
 
 // Connect to DB, then start server
 const PORT = process.env.PORT;

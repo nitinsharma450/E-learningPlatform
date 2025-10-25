@@ -4,6 +4,7 @@ import fs from 'fs'
 import { ServerConfigs } from "../configs/ServerConfigs.js";
 import Course from "../../Schema/Course.js";
 import path from 'path'
+import { studentProfile } from "../../Schema/studentProfile.js";
 
 export class adminController {
 
@@ -232,6 +233,17 @@ static async countCoures(req,res){
  } catch (error) {
   return res.status(500).send({error:error.message})
  }
+}
+
+static async countStudent(req,res){
+  try {
+    let count=await studentProfile.countDocuments()
+    if(count>0){
+      res.status(200).send({message:'success',data:count})
+    }
+  } catch (error) {
+    return res.status(500).send({error:error.message})
+  }
 }
 
 

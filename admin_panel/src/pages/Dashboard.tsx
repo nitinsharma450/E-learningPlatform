@@ -3,7 +3,7 @@ import { FaGraduationCap, FaUsers, FaUserPlus } from "react-icons/fa";
 import { AuthenticationService } from "../services/AuthenticationService";
 import { Api } from "../services/ApiService";
 import { ApiConfigs } from "../configs/ApiConfigs";
-import Spinner from "../component/Spinner";
+
 import { ImCross } from "react-icons/im";
 import { IoMdLogOut } from "react-icons/io";
 import { useNavigate } from "react-router";
@@ -34,6 +34,7 @@ ChartJS.register(
 
 export default function Dashboard() {
   const [numberOfTeacher, setNumberOfTeacher] = useState<number>(0);
+  const [numberOfStudent, setNumberOfStudent] = useState<number>(0);
   const [countCourse, setCountCourse] = useState<number>(0);
   const [userProfile, setUserProfile] = useState<any>([]);
   const [loading, setLoading] = useState<boolean>(false);
@@ -51,6 +52,14 @@ export default function Dashboard() {
       }
     }
   }
+
+  async function countStudent() {
+   if(await AuthenticationService.isAuthenticated()){
+   let response=await Api('student/count')
+   if(response.data){
+     setNumberOfStudent(response.data)
+   }
+  }}
 
   // Fetch total courses
   async function countCourses() {
@@ -90,6 +99,7 @@ export default function Dashboard() {
     countTeacher();
     countCourses();
     fetchProfile();
+    countStudent()
   }, []);
 
   // Chart Data
@@ -216,7 +226,7 @@ export default function Dashboard() {
               <p className="text-sm font-medium text-gray-600">
                 Total Students
               </p>
-              <p className="text-2xl font-bold mt-2">1</p>
+              <p className="text-2xl font-bold mt-2">{numberOfStudent}</p>
             </div>
             <FaUsers className="text-gray-500" size={24} />
           </div>
@@ -264,4 +274,4 @@ export default function Dashboard() {
       </div>
     </>
   );
-}
+  }
