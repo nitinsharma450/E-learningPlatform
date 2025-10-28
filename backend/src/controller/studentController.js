@@ -1,6 +1,8 @@
+import { io } from "../../index.js";
 import Course from "../../Schema/Course.js";
 import { studentProfile } from "../../Schema/studentProfile.js";
 import { ServerConfigs } from "../configs/ServerConfigs.js";
+
 
 export class studentController{
 
@@ -71,22 +73,60 @@ export class studentController{
     
     const existingAdmin = await studentProfile.findOne({ email: details.email });
     if (existingAdmin) {
-      return res.status(200).json({ message: "Email already exists" });
+      let response=await studentProfile.findOneAndUpdate({email:details.email},{$set:{isActive:true,lastLogin:new Date()}})
+      io.emit('userStatusChange',{userId:response.userId,isActive:true})
+      return res.status(200).json({ message: "Email already exists",status:200 ,data:response});
     }
 
     
     const studentData = {
+      userId:details.uid,
       name: details.displayName,
       email: details.email,
       role: "student",
-      profilePicture: details.profilePicture || ""
+      profilePicture: details.profilePicture || "",
+      lastLogin: details.lastLoginAt,
+      isActive:true
     };
 
     const response = await studentProfile.create(studentData);
+    io.emit('userStatusChange',{userId:response.userId,isActive:true})
 
-    res.status(200).json({ message: "Success", data: response });
+    return res.status(200).json({ message: "Success", data: response,status:200 });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    return res.status(500).json({ error: error.message });
   }
+    }
+
+    static async searchProfile(req,res){
+      try {
+        let {email}=req.body;
+        let response=await studentProfile.findOne({email:email})
+        if(response){
+          return res.status(200).send({message:'success',data:response,status:200})
+        }
+      } catch (error) {
+        return res.status(500).send({message:error.message})
+      }
+    }
+
+    static async logout(req,res){
+      try {
+        let {userId}=req.body
+        console.log(userId)
+    
+       if(userId){
+             let response=await studentProfile.findOneAndUpdate({userId:userId},{$set:{isActive:false,lastLogin:new Date()}})
+             console.log(response)
+        
+              io.emit('userStatusChange',{userId:userId,isActive:false})
+        return res.send({message:'success',status:200})
+        
+       }
+       
+       
+      } catch (error) {
+        return res.status(500).send({message:error.message})
+      }
     }
 }

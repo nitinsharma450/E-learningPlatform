@@ -247,6 +247,20 @@ static async countStudent(req,res){
 }
 
 
+static async searchActiveStudents(req, res) {
+  try {
+    const count = await studentProfile.countDocuments({ isActive: true });
+    return res.status(200).send({
+      message: "success",
+      data: count,
+      status: 200
+    });
+  } catch (error) {
+    return res.status(500).send({ message: error.message });
+  }
+}
+
+
 }
 
 

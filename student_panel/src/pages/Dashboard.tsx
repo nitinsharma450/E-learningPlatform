@@ -3,10 +3,15 @@ import { useEffect, useState } from "react";
 import { Api } from "../Service/ApiService";
 import { NavLink } from "react-router";
 import { ApiConfigs } from "../Configs/ApiConfigs";
+import { AuthenticationService } from "../Service/AuthencationService";
+import Logout from "../components/Logout";
 
 export default function CoursesPage() {
   const [courseList, setCourseList] = useState<any>([]);
   const [filterKeyword, setFilterKeyword] = useState<any>({});
+  const [userProfile, setUserProfile] = useState<any>({});
+  const [loading, setLoading] = useState<boolean>(false);
+  const [userId, setUserId] = useState<any>("");  
 
   async function getAllCourse() {
     try {
@@ -31,13 +36,36 @@ export default function CoursesPage() {
     }
   }
 
- async function logout(){
-   localStorage.removeItem(ApiConfigs.TOKEN_CREDENTIAL);
-   window.location.href = "/login";
+   async function fetchProfile() {
+    setLoading(true);
+    if (await AuthenticationService.isAuthenticated()) {
+      try {
+        let rawStorageResponse = localStorage.getItem(
+          ApiConfigs.TOKEN_CREDENTIAL
+        );
+        let storageResponse = rawStorageResponse
+          ? JSON.parse(rawStorageResponse)
+          : null;
+        let response = await Api("profile/search", {
+          email: storageResponse.userDetails.email,
+        });
+        if (response.data) {
+          setUserProfile(response.data)
+          setUserId(response.data.userId)
+
+
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    }
+    setLoading(false);
   }
+
 
   useEffect(() => {
     getAllCourse();
+    fetchProfile()
   }, []);
   useEffect(() => {
     filterCourse();
@@ -70,7 +98,7 @@ export default function CoursesPage() {
         </nav>
         {localStorage.getItem(ApiConfigs.TOKEN_CREDENTIAL) ? (
           <div
-            onClick={logout}
+            onClick={()=>Logout(userId)}
             className="bg-gray-900 cursor-pointer text-white px-6 py-2 rounded-lg hover:bg-green-700 transition"
           >
             logout

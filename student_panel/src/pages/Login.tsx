@@ -8,6 +8,7 @@ import { Api } from '../Service/ApiService';
 import { getAuth, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 import { FcGoogle } from 'react-icons/fc';
 import { toast } from 'react-toastify';
+import { io } from 'socket.io-client';
 
 
 export default function Login() {
@@ -15,6 +16,9 @@ export default function Login() {
      const [loginForm, setLoginForm] = useState<any>({});
   const [error, setError] = useState<any>({});
   let navigate = useNavigate();
+
+  const socket = io("http://localhost:3333");
+
 
    // Import the functions you need from the SDKs you need
 
@@ -47,7 +51,8 @@ const firebaseConfig = {
 
       if (parsedData && parsedData.userDetails) {
         try {
-          await Api("save/credentials", parsedData.userDetails);
+          let response=await Api("save/credentials", parsedData.userDetails);
+          return response;
           
         } catch (err) {
           console.error("Error saving user details:", err);
@@ -66,9 +71,16 @@ const firebaseConfig = {
       const student_credential = { token, userDetails: user };
       localStorage.setItem(ApiConfigs.TOKEN_CREDENTIAL, JSON.stringify(student_credential));
 
-      await saveUserDetails(); 
-      toast.success('Login Successful');
+      let response=await saveUserDetails(); 
+      if(response.status==200){
+        socket.emit("onlineUser",user.uid)
+    toast.success('Login Successful');
       navigate("/");
+      }
+      else{
+        toast.error('Login Failed. Please try again.');
+      }
+     
     } catch (err) {
       console.error("Google login error:", err);
     }

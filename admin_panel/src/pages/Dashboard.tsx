@@ -7,6 +7,7 @@ import { ApiConfigs } from "../configs/ApiConfigs";
 import { ImCross } from "react-icons/im";
 import { IoMdLogOut } from "react-icons/io";
 import { useNavigate } from "react-router";
+import io from 'socket.io-client'
 import Logout from "../component/Logout";
 
 // Chart.js
@@ -33,13 +34,16 @@ ChartJS.register(
 );
 
 export default function Dashboard() {
-  const [numberOfTeacher, setNumberOfTeacher] = useState<number>(0);
-  const [numberOfStudent, setNumberOfStudent] = useState<number>(0);
+  const [numberOfTeacher, setNumberOfTeacher] = useState<number>();
+  const [numberOfStudent, setNumberOfStudent] = useState<number>();
+  const [numberOfActiveStudent, setNumberOfActiveStudent] = useState<number>();
   const [countCourse, setCountCourse] = useState<number>(0);
   const [userProfile, setUserProfile] = useState<any>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [profileModel, showProfileModel] = useState(false);
   const navigate = useNavigate();
+
+  const socket = io("http://localhost:3333");
 
   // Fetch total teachers
   async function countTeacher() {
@@ -60,6 +64,17 @@ export default function Dashboard() {
      setNumberOfStudent(response.data)
    }
   }}
+
+  async function countActiveStudent(){
+
+    if(await AuthenticationService.isAuthenticated()){
+     let response= await Api('student/activeStudents')
+     console.log(response)
+     if( response?.data>=0){
+         setNumberOfActiveStudent(response.data)
+     }
+    }
+  }
 
   // Fetch total courses
   async function countCourses() {
@@ -101,6 +116,16 @@ export default function Dashboard() {
     fetchProfile();
     countStudent()
   }, []);
+
+  useEffect(()=>{
+countActiveStudent()
+
+socket.on('userStatusChange',countActiveStudent)
+
+return () =>{ socket.off('userStatusChange')}
+
+
+  },[])
 
   // Chart Data
   const statsData = {
@@ -233,7 +258,7 @@ export default function Dashboard() {
           <div className="flex justify-between items-center p-6 rounded-xl shadow-md border border-gray-200 bg-white">
             <div>
               <p className="text-sm font-medium text-gray-600">Active Users</p>
-              <p className="text-2xl font-bold mt-2">2</p>
+              <p className="text-2xl font-bold mt-2">{numberOfActiveStudent}</p>
             </div>
             <FaUserPlus className="text-gray-500" size={24} />
           </div>

@@ -24,3 +24,4 @@ adminRouter.post('/course/count',adminController.countCoures)
 //student
 
 adminRouter.post('/student/count',adminController.countStudent)
+adminRouter.post('/student/activeStudents',adminController.searchActiveStudents)
