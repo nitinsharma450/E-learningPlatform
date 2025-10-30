@@ -9,6 +9,7 @@ import { connectDB } from "./connection.js";
 import { adminRouter } from "./src/routes/adminRoutes.js";
 import { studentRouter } from "./src/routes/studentRoutes.js";
 import { ServerConfigs } from "./src/configs/ServerConfigs.js";
+import { teacherRouter } from "./src/routes/teacherRoutes.js";
 
 dotenv.config();
 
@@ -32,6 +33,7 @@ export const io = new Server(server, {
 // routes
 app.use("/api/admin", adminRouter);
 app.use("/api/student", studentRouter);
+app.use('/api/teacher',teacherRouter)
 
 io.on("connection", (socket) => {
   console.log("🟢 Socket connected:", socket.id);
