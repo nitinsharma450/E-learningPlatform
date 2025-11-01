@@ -3,11 +3,14 @@ import { FaUser, FaLock } from "react-icons/fa";
 import { Api } from "../services/ApiService";
 import { toast } from "react-toastify";
 import LoginSpinner from "../component/LoginSpinner";
+import { ApiConfigs } from "../Configs/ApiConfigs";
+import { useNavigate } from "react-router";
 
 export default function TeacherLogin() {
  const [loginForm,setLoginForm]=useState<any>({})
  const [error,setError]=useState<any>({})
   const [loading,setLoading]=useState<boolean>(false)
+  let navigate=useNavigate()
   const handleLogin = async() => {
     
    
@@ -24,8 +27,17 @@ export default function TeacherLogin() {
       try {
         setLoading(true)
          let response=await Api('login',loginForm)
+         console.log(response)
         if(response.status==200){
+           let userData={
+          userId:response.data._id,
+          token:response.token
+        }
+        localStorage.setItem(ApiConfigs.TOKEN_CREDENTIAL,JSON.stringify(userData))
         toast.success('login successful')
+       
+        navigate('/dashboard')
+
         }
         else{
           toast.error('invalid credentials')

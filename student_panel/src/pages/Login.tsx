@@ -9,6 +9,7 @@ import { getAuth, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 import { FcGoogle } from 'react-icons/fc';
 import { toast } from 'react-toastify';
 import { io } from 'socket.io-client';
+import dotenv from 'dotenv'
 
 
 export default function Login() {
@@ -16,6 +17,7 @@ export default function Login() {
      const [loginForm, setLoginForm] = useState<any>({});
   const [error, setError] = useState<any>({});
   let navigate = useNavigate();
+  dotenv.config()
 
   const socket = io("http://localhost:3333");
 
@@ -28,7 +30,7 @@ export default function Login() {
 // Your web app's Firebase configuration
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
-  apiKey: "AIzaSyB_Bua2_e2ApFClFgJJziTsOXVfhj5NI1M",
+  apiKey: process.env.FIREBASE_API_KEY,
   authDomain: "studentpanel-90479.firebaseapp.com",
   projectId: "studentpanel-90479",
   storageBucket: "studentpanel-90479.firebasestorage.app",
