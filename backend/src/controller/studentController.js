@@ -1,5 +1,6 @@
 import { io } from "../../index.js";
 import Course from "../../Schema/Course.js";
+import { couseContent } from "../../Schema/courseContent.js";
 import { studentProfile } from "../../Schema/studentProfile.js";
 import { ServerConfigs } from "../configs/ServerConfigs.js";
 
@@ -129,4 +130,29 @@ export class studentController{
         return res.status(500).send({message:error.message})
       }
     }
+
+    static async searchCourseByTitle(req,res){
+      let courseTitle=req.param
+
+      console.log(courseTitle)
+      try {
+        console.log(courseTitle)
+         let course=await couseContent.find({courseTitle})
+         if(course){
+          console.log(course)
+
+           course = course.map(course => {
+                 const c = course.toObject(); // convert to plain object
+                 c.contentUrl = `${ServerConfigs.Host}:${ServerConfigs.Port}/${ServerConfigs.PublicFolder}/${c.contentUrl}`;
+                 return c;
+               });
+
+               return res.status(200).send({message:'success',data:course,status:200})
+         }
+      } catch (error) {
+        
+        return res.status(500).send({error:error.message})
+      }
+    }
 }
+

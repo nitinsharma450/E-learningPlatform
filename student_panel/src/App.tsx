@@ -5,6 +5,7 @@ import { BrowserRouter, Routes } from "react-router"
 import { lazy, Suspense } from "react"
 import Spinner from "./components/Spinner"
 import { ToastContainer } from "react-toastify";
+import ReadCourse from "./pages/readCourse";
 
 function App() {
 
@@ -33,6 +34,7 @@ function App() {
 
     <Route path="/"  element={<Suspense fallback={<Spinner />}> <LazyDashboard /></Suspense>}/>
     <Route path="/login"  element={<Suspense fallback={<Spinner />}> <LazyLogin /></Suspense>}/>
+    <Route  path="/course/:title" element={<ReadCourse />}/>
    </Routes>
    
    </BrowserRouter>

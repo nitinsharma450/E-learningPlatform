@@ -61,6 +61,7 @@ export default function CoursesPage() {
     }
     setLoading(false);
   }
+ 
 
 
   useEffect(() => {
@@ -205,9 +206,9 @@ export default function CoursesPage() {
                     </p>
                   )}
 
-                  <button className="w-full mt-5 border border-green-600 text-green-600 py-2 rounded-md font-medium hover:bg-green-50 transition">
+                  <NavLink to={`/course/${course.title}`} className="w-full mt-5 border border-green-600 text-green-600 py-2 rounded-md font-medium hover:bg-green-50 transition">
                     Explore
-                  </button>
+                  </NavLink>
                 </div>
               </div>
             ))

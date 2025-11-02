@@ -3,6 +3,7 @@ import Layout from "./component/Layout";
 import Dashboard from "./pages/Dashboard";
 import Login from "./pages/Login";
 import { ToastContainer } from "react-toastify";
+import CourseAddPage from "./pages/CourseAddPage";
 
 function App() {
   return (
@@ -24,6 +25,7 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route element={<Layout />}>
             <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/course" element={<CourseAddPage />} />
           </Route>
         </Routes>
       </BrowserRouter>

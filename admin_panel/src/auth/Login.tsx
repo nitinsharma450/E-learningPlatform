@@ -6,19 +6,15 @@ import { useNavigate } from "react-router";
 import { ApiConfigs } from "../configs/ApiConfigs";
 import { AuthenticationService } from "../services/AuthenticationService";
 import { Api } from "../services/ApiService";
-import dotenv from 'dotenv'
-
-dotenv.config()
 
 export default function Login() {
   const [loginForm, setLoginForm] = useState<any>({});
   const [error, setError] = useState<any>({});
-  dotenv.config()
   let navigate = useNavigate();
 
   // ✅ Firebase config (fixed bucket name)
   const firebaseConfig = {
-    apiKey: process.env.FIREBASE_API_KEY,
+    apiKey: "AIzaSyAKFvqMu7v9Uv_pbRh_FpBc15hF8dWKMJc",
     authDomain: "adminpanel-c7fc8.firebaseapp.com",
     projectId: "adminpanel-c7fc8",
     storageBucket: "adminpanel-c7fc8.appspot.com",
