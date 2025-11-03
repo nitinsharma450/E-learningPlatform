@@ -1,6 +1,7 @@
 import { io } from "../../index.js";
 import Course from "../../Schema/Course.js";
-import { couseContent } from "../../Schema/courseContent.js";
+import { CourseContent } from "../../Schema/courseContent.js";
+import { EnrollCourse } from "../../Schema/EnrollCourse.js";
 import { studentProfile } from "../../Schema/studentProfile.js";
 import { ServerConfigs } from "../configs/ServerConfigs.js";
 
@@ -137,7 +138,7 @@ export class studentController{
       console.log(courseTitle)
       try {
         console.log(courseTitle)
-         let course=await couseContent.find({courseTitle})
+         let course=await CourseContent.find({courseTitle})
          if(course){
           console.log(course)
 
@@ -154,5 +155,34 @@ export class studentController{
         return res.status(500).send({error:error.message})
       }
     }
+
+    static async enroll(req, res) {
+  try {
+    const enrollDetails = req.body;
+    console.log("Enroll details:", enrollDetails);
+
+    // Validate required fields
+    if (!enrollDetails.user_id || !enrollDetails.courseTitle) {
+      return res.status(400).send({ message: "userId and title are required" });
+    }
+
+    // Insert into DB
+    const response = await EnrollCourse.create(enrollDetails);
+
+    // Respond success
+    return res.status(200).send({
+      message: "success",
+      status: 200,
+      data: response,
+    });
+  } catch (error) {
+    console.error("Enroll error:", error);
+    return res.status(500).send({
+      message: "Internal server error",
+      error: error.message,
+    });
+  }
+}
+
 }
 

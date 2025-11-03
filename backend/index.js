@@ -25,8 +25,13 @@ app.use(ServerConfigs.PublicRoute, express.static(ServerConfigs.PublicFolder));
 // create socket.io server
 export const io = new Server(server, {
   cors: {
-    origin: "*",
-    methods: ["GET", "POST"]
+    origin: [
+      "http://localhost:5173",
+      "http://localhost:5174",
+      "http://localhost:5175"
+    ],
+    methods: ["GET", "POST"],
+    credentials: true 
   }
 });
 

@@ -7,16 +7,17 @@ import { AuthenticationService } from "../Service/AuthencationService";
 import Logout from "../components/Logout";
 
 export default function CoursesPage() {
-  const [courseList, setCourseList] = useState<any>([]);
-  const [filterKeyword, setFilterKeyword] = useState<any>({});
+  const [courseList, setCourseList] = useState<any[]>([]);
+  const [filterKeyword, setFilterKeyword] = useState<string>("");
   const [userProfile, setUserProfile] = useState<any>({});
   const [loading, setLoading] = useState<boolean>(false);
-  const [userId, setUserId] = useState<any>("");  
+  const [userId, setUserId] = useState<string>("");
 
+  // ✅ Fetch all courses
   async function getAllCourse() {
     try {
       const response = await Api("course/searchAll");
-      if (response && response.data) {
+      if (response?.data) {
         setCourseList(response.data);
       }
     } catch (error) {
@@ -24,56 +25,93 @@ export default function CoursesPage() {
     }
   }
 
+  // ✅ Filter course by keyword
   async function filterCourse() {
-    if (!filterKeyword.key || filterKeyword.key.trim() === "") {
+    if (!filterKeyword.trim()) {
       getAllCourse();
       return;
     }
-
-    let response = await Api("course/filterCourse", filterKeyword);
-    if (response && response.data) {
-      setCourseList(response.data);
+    try {
+      const response = await Api("course/filterCourse", { key: filterKeyword });
+      if (response?.data) {
+        setCourseList(response.data);
+      }
+    } catch (error) {
+      console.error("Error filtering courses:", error);
     }
   }
 
-   async function fetchProfile() {
+  // ✅ Fetch user profile (if logged in)
+  async function fetchProfile() {
     setLoading(true);
-    if (await AuthenticationService.isAuthenticated()) {
-      try {
-        let rawStorageResponse = localStorage.getItem(
-          ApiConfigs.TOKEN_CREDENTIAL
-        );
-        let storageResponse = rawStorageResponse
-          ? JSON.parse(rawStorageResponse)
-          : null;
-        let response = await Api("profile/search", {
-          email: storageResponse.userDetails.email,
+    try {
+      if (await AuthenticationService.isAuthenticated()) {
+        const raw = localStorage.getItem(ApiConfigs.TOKEN_CREDENTIAL);
+        const parsed = raw ? JSON.parse(raw) : null;
+
+        const response = await Api("profile/search", {
+          email: parsed?.userDetails?.email,
         });
-        if (response.data) {
-          setUserProfile(response.data)
-          setUserId(response.data.userId)
 
-
+        if (response?.data) {
+          setUserProfile(response.data);
+          setUserId(response.data.userId || response.data._id);
         }
-      } catch (error) {
-        console.log(error);
       }
+    } catch (error) {
+      console.error("Error fetching profile:", error);
     }
     setLoading(false);
   }
- 
 
+  // ✅ Enroll in a course (fixed logic)
+  async function courseEnroll(courseTitle: string) {
+    try {
+      if (await AuthenticationService.isAuthenticated()) {
+        const raw = localStorage.getItem(ApiConfigs.TOKEN_CREDENTIAL);
+        const parsed = raw ? JSON.parse(raw) : null;
+        const user_id = parsed?.userDetails?.uid;
 
+        
+
+        const enrollPayload = { user_id, courseTitle };
+        console.log("Enroll Payload:", enrollPayload);
+
+        const response = await Api("course/enroll", enrollPayload);
+        if (response?.status === 200) {
+          console.log("✅ Enrolled successfully!");
+        } else {
+          console.log("❌ Enrollment failed:", response);
+        }
+      } else {
+        console.warn("User not authenticated");
+      }
+    } catch (error) {
+      console.error("Error enrolling in course:", error);
+    }
+  }
+
+  // ✅ Initial data load
   useEffect(() => {
     getAllCourse();
-    fetchProfile()
+    fetchProfile();
   }, []);
+
+  // ✅ Filter effect
   useEffect(() => {
-    filterCourse();
+    if (filterKeyword.trim() !== "") {
+      filterCourse();
+    }
   }, [filterKeyword]);
 
+  // ✅ UI
   return (
-    <div className="min-h-screen   from-[#dbeafe] to-white" style={ {background: 'linear-gradient(180deg, #dbeafe 0%, #ffffff 100%)'} }>
+    <div
+      className="min-h-screen from-[#dbeafe] to-white"
+      style={{
+        background: "linear-gradient(180deg, #dbeafe 0%, #ffffff 100%)",
+      }}
+    >
       {/* Navbar */}
       <header className="flex justify-between items-center px-10 py-4 bg-white shadow-sm sticky top-0 z-50">
         <div className="flex items-center gap-2">
@@ -97,12 +135,13 @@ export default function CoursesPage() {
             Jobs
           </a>
         </nav>
+
         {localStorage.getItem(ApiConfigs.TOKEN_CREDENTIAL) ? (
           <div
-            onClick={()=>Logout(userId)}
+            onClick={() => Logout(userId)}
             className="bg-gray-900 cursor-pointer text-white px-6 py-2 rounded-lg hover:bg-green-700 transition"
           >
-            logout
+            Logout
           </div>
         ) : (
           <NavLink
@@ -116,31 +155,33 @@ export default function CoursesPage() {
 
       {/* Title + Search */}
       <section className="text-center mt-12 px-4">
-        <h1 className="text-3xl font-bold text-gray-800">
-          OpenLearn
-        </h1>
+        <h1 className="text-3xl font-bold text-gray-800">OpenLearn</h1>
         <p className="text-gray-600 mt-2">
           Interactive LIVE & Self-Paced Courses
         </p>
         <div className="flex justify-center items-center mt-2 text-gray-600 gap-2">
-          <FaPhoneAlt /> <a className="text-blue-600 hover:underline" href="tell:8800817720">8800817720</a>
+          <FaPhoneAlt />{" "}
+          <a
+            className="text-blue-600 hover:underline"
+            href="tel:8800817720"
+          >
+            8800817720
+          </a>
         </div>
 
         {/* Search Bar */}
-         <div className="mt-8 flex justify-center">
-      <div className="relative w-full max-w-2xl">
-        <input
-          type="text"
-          placeholder="  What do you want to learn today?"
-          onChange={(e) =>
-            setFilterKeyword({ ...filterKeyword, key: e.target.value })
-          }
-          className="w-full py-3 pl-12 pr-4 rounded-2xl border border-gray-200 bg-white/70 text-gray-800 placeholder-gray-400 shadow-md backdrop-blur-sm 
-          focus:border-green-500 focus:ring-2 focus:ring-green-400 focus:bg-white transition-all duration-300 ease-in-out"
-        />
-        <FaSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-green-600 text-lg pointer-events-none" />
-      </div>
-    </div>
+        <div className="mt-8 flex justify-center">
+          <div className="relative w-full max-w-2xl">
+            <input
+              type="text"
+              placeholder="  What do you want to learn today?"
+              onChange={(e) => setFilterKeyword(e.target.value)}
+              className="w-full py-3 pl-12 pr-4 rounded-2xl border border-gray-200 bg-white/70 text-gray-800 placeholder-gray-400 shadow-md backdrop-blur-sm 
+                focus:border-green-500 focus:ring-2 focus:ring-green-400 focus:bg-white transition-all duration-300 ease-in-out"
+            />
+            <FaSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-green-600 text-lg pointer-events-none" />
+          </div>
+        </div>
       </section>
 
       {/* Course Section */}
@@ -159,10 +200,9 @@ export default function CoursesPage() {
         </div>
 
         {/* Courses Grid */}
-        {/* Courses Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 mt-8">
           {courseList.length > 0 ? (
-            courseList.map((course: any, index: any) => (
+            courseList.map((course: any, index: number) => (
               <div
                 key={index}
                 className="bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100"
@@ -206,7 +246,11 @@ export default function CoursesPage() {
                     </p>
                   )}
 
-                  <NavLink to={`/course/${course.title}`} className="w-full mt-5 border border-green-600 text-green-600 py-2 rounded-md font-medium hover:bg-green-50 transition">
+                  <NavLink
+                    to={`/course/${course.title}`}
+                    onClick={() => courseEnroll(course.title)}
+                    className="w-full mt-5 border border-green-600 text-green-600 py-2 rounded-md font-medium hover:bg-green-50 transition"
+                  >
                     Explore
                   </NavLink>
                 </div>

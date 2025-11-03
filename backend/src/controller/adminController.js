@@ -259,7 +259,24 @@ static async searchActiveStudents(req, res) {
     return res.status(500).send({ message: error.message });
   }
 }
+static async searchSubjectTitle(req,res){
 
+    try {
+      console.log('coming')
+        let courses=await Course.find()
+        let title=[];
+        if(courses){
+            courses.map((course)=>{
+                title.push(course.title)
+            })
+        }
+        return res.status(200).send({message:'success',status:200,data:title})
+    } catch (error) {
+        console.error("Server error:", error);
+        return res.status(500).json({ message: "Server error", error: error.message });
+    }
+
+    }
 
 }
 

@@ -1,6 +1,6 @@
 import mongoose from 'mongoose'
 
-let courseContent=mongoose.Schema({
+let courseContentSchema=mongoose.Schema({
     title:{type:String, required:true},
     description:{type:String, required:true},
     contentUrl:{type:String, required:true},
@@ -15,5 +15,7 @@ let courseContent=mongoose.Schema({
     }
 })
 
- export const couseContent=mongoose.model('courseContent',courseContent)
+ export const CourseContent =
+  mongoose.models.courseContent || mongoose.model("courseContent", courseContentSchema);
+
 

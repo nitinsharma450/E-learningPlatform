@@ -1,15 +1,58 @@
 import { FaUsers } from "react-icons/fa";
 import { PiBookOpenTextLight } from "react-icons/pi";
-import { LuFileText } from "react-icons/lu";
-import { LuTrendingUp } from "react-icons/lu";
+import { LuFileText, LuTrendingUp } from "react-icons/lu";
+
+import { useEffect, useState } from "react";
+import { Api } from "../services/ApiService";
+import { ApiConfigs } from "../Configs/ApiConfigs";
+import { AuthenticationService } from "../services/AuthencationService";
 
 export default function Dashboard() {
+  const [countCourse, setCountCourse] = useState(0);
+  const [teacherId, setTeacherId] = useState<string | null>(null);
+  const [teacherSubject, setTeacherSubject] = useState<string>("");
+
+  async function getProfile() {
+    if (await AuthenticationService.isAuthenticated()) {
+      const rawResponse = localStorage.getItem(ApiConfigs.TOKEN_CREDENTIAL);
+      const parsedResponse = rawResponse ? JSON.parse(rawResponse) : null;
+
+      if (parsedResponse?.userId) {
+        setTeacherId(parsedResponse.userId);
+
+        const response = await Api("profile/search", { user_id: parsedResponse.userId });
+        if (response?.data) {
+          setTeacherSubject(response.data.subject); // ✅ update state
+          console.log("Profile subject:", response.data.subject);
+        }
+      }
+    }
+  }
+
+  async function getCourseContentCount(subject: string) {
+    if (await AuthenticationService.isAuthenticated() && subject) {
+      const response = await Api("courseContent/count", { subject });
+      if (response?.data) {
+        setCountCourse(response.data);
+      }
+    }
+  }
+
+  // 1️⃣ Fetch profile once
+  useEffect(() => {
+    getProfile();
+  }, []);
+
+  // 2️⃣ Fetch course count when subject is loaded
+  useEffect(() => {
+    if (teacherSubject) {
+      getCourseContentCount(teacherSubject);
+    }
+  }, [teacherSubject]);
+
   return (
     <div className="p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-      
-      {/* Total Students */}
-     <div className="flex justify-between items-center p-6 rounded-xl shadow-md border border-gray-200 bg-white transform hover:scale-105 transition-transform duration-300">
-
+      <div className="flex justify-between items-center p-6 rounded-xl shadow-md border border-gray-200 bg-white transform hover:scale-105 transition-transform duration-300">
         <div>
           <p className="text-gray-600 font-medium">Total Students</p>
           <p className="text-2xl font-bold">0</p>
@@ -19,18 +62,16 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Total Courses */}
       <div className="flex justify-between items-center p-6 rounded-xl shadow-md border border-gray-200 bg-white transform hover:scale-105 transition-transform duration-300">
         <div>
-          <p className="text-gray-600 font-medium">Total Courses</p>
-          <p className="text-2xl font-bold">0</p>
+          <p className="text-gray-600 font-medium">Total Courses Content</p>
+          <p className="text-2xl font-bold">{countCourse}</p>
         </div>
         <div className="p-3 rounded-lg bg-green-50">
           <PiBookOpenTextLight size={28} className="text-green-500" />
         </div>
       </div>
 
-      {/* Assignments */}
       <div className="flex justify-between items-center p-6 rounded-xl shadow-md border border-gray-200 bg-white transform hover:scale-105 transition-transform duration-300">
         <div>
           <p className="text-gray-600 font-medium">Assignments</p>
@@ -41,7 +82,6 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Active Quizzes */}
       <div className="flex justify-between items-center p-6 rounded-xl shadow-md border border-gray-200 bg-white transform hover:scale-105 transition-transform duration-300">
         <div>
           <p className="text-gray-600 font-medium">Active Quizzes</p>
@@ -51,7 +91,6 @@ export default function Dashboard() {
           <LuTrendingUp size={28} className="text-red-500" />
         </div>
       </div>
-
     </div>
   );
 }
