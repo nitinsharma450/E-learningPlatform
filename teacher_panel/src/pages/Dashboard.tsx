@@ -6,11 +6,15 @@ import { useEffect, useState } from "react";
 import { Api } from "../services/ApiService";
 import { ApiConfigs } from "../Configs/ApiConfigs";
 import { AuthenticationService } from "../services/AuthencationService";
+import { io } from "socket.io-client";
 
 export default function Dashboard() {
   const [countCourse, setCountCourse] = useState(0);
   const [teacherId, setTeacherId] = useState<string | null>(null);
   const [teacherSubject, setTeacherSubject] = useState<string>("");
+  const [enrollStudentCount,setEnrollStudentCount]=useState(Number)
+    const [ActiveEnrollStudent,setActiveEnrollStudent]=useState<any[]>([])
+   const socket = io("http://localhost:3333");
 
   async function getProfile() {
     if (await AuthenticationService.isAuthenticated()) {
@@ -30,7 +34,7 @@ export default function Dashboard() {
   }
 
   async function getCourseContentCount(subject: string) {
-    if (await AuthenticationService.isAuthenticated() && subject) {
+    if (await AuthenticationService.isAuthenticated()) {
       const response = await Api("courseContent/count", { subject });
       if (response?.data) {
         setCountCourse(response.data);
@@ -38,15 +42,49 @@ export default function Dashboard() {
     }
   }
 
+  async function getEnrollStudentCount(subject:String){
+    if(await AuthenticationService.isAuthenticated()){
+
+      try {
+        let response= await Api('enroll/student/search',{subject})
+        if(response){
+          setEnrollStudentCount(response.data)
+        }
+      } catch (error) {
+        console.log(error)
+      }
+        
+    }
+  }
+
+  async function getActiveEnrollStudent(){
+    if(await AuthenticationService.isAuthenticated()){
+      let response= await Api('student/activeStudent')
+      console.log(response)
+      if(response.data){
+      setActiveEnrollStudent(response.data)
+      }
+    }
+  }
+
+ useEffect(()=>{
+
+    getActiveEnrollStudent()
+    socket.on('userStatusChange',getActiveEnrollStudent)
+
+    return () =>{ socket.off('userStatusChange')}
+  },[])
   // 1️⃣ Fetch profile once
   useEffect(() => {
     getProfile();
+    
   }, []);
 
   // 2️⃣ Fetch course count when subject is loaded
   useEffect(() => {
     if (teacherSubject) {
       getCourseContentCount(teacherSubject);
+      getEnrollStudentCount(teacherSubject)
     }
   }, [teacherSubject]);
 
@@ -55,7 +93,7 @@ export default function Dashboard() {
       <div className="flex justify-between items-center p-6 rounded-xl shadow-md border border-gray-200 bg-white transform hover:scale-105 transition-transform duration-300">
         <div>
           <p className="text-gray-600 font-medium">Total Students</p>
-          <p className="text-2xl font-bold">0</p>
+          <p className="text-2xl font-bold">{enrollStudentCount}</p>
         </div>
         <div className="p-3 rounded-lg bg-blue-50">
           <FaUsers size={28} className="text-blue-500" />

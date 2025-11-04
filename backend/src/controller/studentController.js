@@ -165,6 +165,7 @@ export class studentController{
     if (!enrollDetails.user_id || !enrollDetails.courseTitle) {
       return res.status(400).send({ message: "userId and title are required" });
     }
+    enrollDetails.isActive=true
 
     // Insert into DB
     const response = await EnrollCourse.create(enrollDetails);

@@ -5,6 +5,7 @@ import { NavLink } from "react-router";
 import { ApiConfigs } from "../Configs/ApiConfigs";
 import { AuthenticationService } from "../Service/AuthencationService";
 import Logout from "../components/Logout";
+import { io } from "socket.io-client";
 
 export default function CoursesPage() {
   const [courseList, setCourseList] = useState<any[]>([]);
@@ -12,6 +13,7 @@ export default function CoursesPage() {
   const [userProfile, setUserProfile] = useState<any>({});
   const [loading, setLoading] = useState<boolean>(false);
   const [userId, setUserId] = useState<string>("");
+
 
   // ✅ Fetch all courses
   async function getAllCourse() {
@@ -91,11 +93,14 @@ export default function CoursesPage() {
     }
   }
 
+  
   // ✅ Initial data load
   useEffect(() => {
     getAllCourse();
     fetchProfile();
   }, []);
+
+ 
 
   // ✅ Filter effect
   useEffect(() => {

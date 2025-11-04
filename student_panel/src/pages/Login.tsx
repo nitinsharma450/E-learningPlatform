@@ -73,7 +73,7 @@ const firebaseConfig = {
 
       let response=await saveUserDetails(); 
       if(response.status==200){
-        socket.emit("onlineUser",user.uid)
+        socket.emit("userStatusChange",user.uid)
     toast.success('Login Successful');
       navigate("/");
       }

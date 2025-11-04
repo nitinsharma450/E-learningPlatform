@@ -7,6 +7,8 @@ import Course from "../../Schema/Course.js";
 import { ServerConfigs } from "../configs/ServerConfigs.js";
 import { CourseContent } from "../../Schema/CourseContent.js";
 import { title } from "process";
+import { EnrollCourse } from "../../Schema/EnrollCourse.js";
+import { studentProfile } from "../../Schema/studentProfile.js";
 
 
 export class teacherController {
@@ -151,8 +153,6 @@ export class teacherController {
     return res.status(500).send({ message: "Internal server error", error: error.message });
   }
 }
-
-
   static async searchProfile(req, res) {
     try {
       const { user_id } = req.body;
@@ -175,6 +175,59 @@ export class teacherController {
       return res.status(500).send({ message: error.message });
     }
   }
+
+  static async searchEnrollStudent(req,res){
+
+    try {
+      let title=req.body;
+      console.log(title)
+
+      if(title){
+        let course={courseTitle:title.subject}
+       let count= await EnrollCourse.countDocuments(course)
+
+       if(count>0)
+       {
+        return res.status(200).send({message:'success',data:count})
+       }
+       else{
+        return res.status(200).send({message:'suucess',data:0})
+       }
+      }
+      
+    } catch (error) {
+      return res.status(500).send({error:error.message})
+    }
+  }
+
+  static async searchActiveStudent(req, res) {
+  try {
+    
+    const enrollments = await EnrollCourse.find({ isActive: true });
+
+
+    
+  console.log(enrollments)
+   
+
+    if (!enrollments) {
+      return res.status(200).send({ message: "No active student profiles found" });
+    }
+
+    // Success response
+    return res.status(200).send({
+      message: "success",
+      data: enrollments,
+    });
+  } catch (error) {
+    console.error("Search active student error:", error);
+    return res.status(500).send({
+      message: "Internal server error",
+      error: error.message,
+    });
+  }
+}
+
 
   
 }
