@@ -5,6 +5,7 @@ import { toast } from "react-toastify";
 import LoginSpinner from "../component/LoginSpinner";
 import { ApiConfigs } from "../Configs/ApiConfigs";
 import { useNavigate } from "react-router";
+import { GiToken } from "react-icons/gi";
 
 export default function TeacherLogin() {
   const [loginForm, setLoginForm] = useState({
@@ -53,14 +54,17 @@ export default function TeacherLogin() {
         let response = await Api("login", loginForm);
         console.log(response);
         if (response.status == 200) {
-          let userData = {
-            userId: response.data._id,
-            token: response.token,
-          };
+         
+           
+            let token=response.token
+            let userId={userId:response.data._id}
+          
           localStorage.setItem(
             ApiConfigs.TOKEN_CREDENTIAL,
-            JSON.stringify(userData)
+            token
           );
+
+          localStorage.setItem(ApiConfigs.TEACHER_ID,JSON.stringify(userId))
           toast.success("login successful");
 
           navigate("/dashboard");

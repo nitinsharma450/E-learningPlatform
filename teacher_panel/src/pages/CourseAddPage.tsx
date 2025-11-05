@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { AuthenticationService } from "../services/AuthencationService";
 import { Api } from "../services/ApiService";
 import { toast } from "react-toastify";
+import { useNavigate } from "react-router";
 
 export default function CourseAddPage() {
   const [file, setFile] = useState<File | null>(null);
@@ -9,22 +10,24 @@ export default function CourseAddPage() {
     title: "",
     category: "",
     description: "",
-    contentType: "",
+    contentType: ""
   });
   const [titles, setTitles] = useState<any[]>([]);
   const [loadingTitles, setLoadingTitles] = useState(false);
+  let navigate=useNavigate()
 
   // Fetch course titles from backend
   async function fetchTitles() {
     try {
       setLoadingTitles(true);
-      if (await AuthenticationService.isAuthenticated()) {
+      
         const response = await Api("course/searchTitles");
         console.log(response.data)
         if (response.status === 200) {
           setTitles(response.data);
         }
-      }
+      
+     
     } catch (err) {
       console.error("Error fetching titles:", err);
       toast.error("Failed to load course titles");
@@ -71,6 +74,9 @@ export default function CourseAddPage() {
         } else {
           toast.error("Course upload failed");
         }
+      }
+      else{
+        navigate('/')
       }
     } catch (error) {
       console.error("Upload error:", error);

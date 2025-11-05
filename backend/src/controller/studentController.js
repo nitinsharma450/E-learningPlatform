@@ -1,6 +1,7 @@
 import { io } from "../../index.js";
 import Course from "../../Schema/Course.js";
-import { CourseContent } from "../../Schema/courseContent.js";
+import { CourseContent } from "../../Schema/CourseContent.js";
+
 import { EnrollCourse } from "../../Schema/EnrollCourse.js";
 import { studentProfile } from "../../Schema/studentProfile.js";
 import { ServerConfigs } from "../configs/ServerConfigs.js";
@@ -120,6 +121,9 @@ export class studentController{
        if(userId){
              let response=await studentProfile.findOneAndUpdate({userId:userId},{$set:{isActive:false,lastLogin:new Date()}})
              console.log(response)
+
+             let resp=await EnrollCourse.findOneAndUpdate({user_id:userId},{$set:{isActive:false}})
+             console.log(resp)
         
               io.emit('userStatusChange',{userId:userId,isActive:false})
         return res.send({message:'success',status:200})
@@ -156,26 +160,48 @@ export class studentController{
       }
     }
 
-    static async enroll(req, res) {
+   static async enroll(req, res) {
   try {
     const enrollDetails = req.body;
     console.log("Enroll details:", enrollDetails);
 
-    // Validate required fields
-    if (!enrollDetails.user_id || !enrollDetails.courseTitle) {
-      return res.status(400).send({ message: "userId and title are required" });
+    const { user_id, courseTitle } = enrollDetails;
+
+    // ✅ Validate required fields
+    if (!user_id || !courseTitle) {
+      return res.status(400).send({ message: "user_id and courseTitle are required" });
     }
-    enrollDetails.isActive=true
 
-    // Insert into DB
-    const response = await EnrollCourse.create(enrollDetails);
-
-    // Respond success
-    return res.status(200).send({
-      message: "success",
-      status: 200,
-      data: response,
+    // ✅ Check if user already enrolled
+    const existingEnrollment = await EnrollCourse.findOne({
+      user_id: user_id,
+      courseTitle: courseTitle,
     });
+
+    if (existingEnrollment) {
+      // ✅ Reactivate existing enrollment
+      await EnrollCourse.updateMany({ user_id }, { $set: { isActive: true } });
+
+
+      return res.status(200).send({
+        message: "Enrollment reactivated successfully",
+        status: 200,
+        data: existingEnrollment,
+      });
+    }
+
+    
+    enrollDetails.isActive = true;
+    enrollDetails.timeOfEnroll = new Date();
+
+    const newEnrollment = await EnrollCourse.create(enrollDetails);
+
+    return res.status(200).send({
+      message: "Enrollment created successfully",
+      status: 200,
+      data: newEnrollment,
+    });
+
   } catch (error) {
     console.error("Enroll error:", error);
     return res.status(500).send({
@@ -184,6 +210,7 @@ export class studentController{
     });
   }
 }
+
 
 }
 

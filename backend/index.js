@@ -44,7 +44,18 @@ io.on("connection", (socket) => {
   console.log("🟢 Socket connected:", socket.id);
 
   socket.emit("welcome", "Hello from server 👋");
+
+  // listen for user status change and broadcast to all clients
+  socket.on("userStatusChange", (data) => {
+    console.log("🔄 User status changed:", data);
+    io.emit("userStatusChange", data); // broadcast to everyone
+  });
+
+  socket.on("disconnect", () => {
+    console.log("🔴 Socket disconnected:", socket.id);
+  });
 });
+
 
 
 // connect to database and start server

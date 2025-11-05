@@ -6,6 +6,8 @@ import { ApiConfigs } from "../Configs/ApiConfigs";
 import { AuthenticationService } from "../Service/AuthencationService";
 import Logout from "../components/Logout";
 import { io } from "socket.io-client";
+import { socket } from "../socket";
+
 
 export default function CoursesPage() {
   const [courseList, setCourseList] = useState<any[]>([]);
@@ -13,6 +15,7 @@ export default function CoursesPage() {
   const [userProfile, setUserProfile] = useState<any>({});
   const [loading, setLoading] = useState<boolean>(false);
   const [userId, setUserId] = useState<string>("");
+   
 
 
   // ✅ Fetch all courses
@@ -82,6 +85,7 @@ export default function CoursesPage() {
         const response = await Api("course/enroll", enrollPayload);
         if (response?.status === 200) {
           console.log("✅ Enrolled successfully!");
+        // socket.emit("userStatusChange");
         } else {
           console.log("❌ Enrollment failed:", response);
         }

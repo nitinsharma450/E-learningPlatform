@@ -200,25 +200,28 @@ export class teacherController {
     }
   }
 
-  static async searchActiveStudent(req, res) {
+ static async searchActiveStudent(req, res) {
   try {
-    
+    // Step 1: Find all active enrollments
     const enrollments = await EnrollCourse.find({ isActive: true });
 
-
-    
-  console.log(enrollments)
-   
-
-    if (!enrollments) {
+    // Step 2: If no active enrollments
+    if (enrollments.length === 0) {
       return res.status(200).send({ message: "No active student profiles found" });
     }
 
-    // Success response
+    // Step 3: Get all unique user IDs
+    const userIds = enrollments.map(enroll => enroll.user_id);
+
+    // Step 4: Fetch all student profiles matching those IDs
+    const studentProfiles = await studentProfile.find({ userId: { $in: userIds } });
+
+    // Step 5: Send response
     return res.status(200).send({
       message: "success",
-      data: enrollments,
+      data: studentProfiles,
     });
+
   } catch (error) {
     console.error("Search active student error:", error);
     return res.status(500).send({
