@@ -1,7 +1,7 @@
 import { FaPhoneAlt, FaSearch } from "react-icons/fa";
 import { useEffect, useState } from "react";
 import { Api } from "../Service/ApiService";
-import { NavLink } from "react-router";
+import { NavLink, useNavigate } from "react-router";
 import { ApiConfigs } from "../Configs/ApiConfigs";
 import { AuthenticationService } from "../Service/AuthencationService";
 import Logout from "../components/Logout";
@@ -15,6 +15,8 @@ export default function CoursesPage() {
   const [userProfile, setUserProfile] = useState<any>({});
   const [loading, setLoading] = useState<boolean>(false);
   const [userId, setUserId] = useState<string>("");
+  let navigate=useNavigate()
+
    
 
 
@@ -90,12 +92,15 @@ export default function CoursesPage() {
           console.log("❌ Enrollment failed:", response);
         }
       } else {
+        navigate('/login')
         console.warn("User not authenticated");
       }
     } catch (error) {
       console.error("Error enrolling in course:", error);
     }
   }
+
+ 
 
   
   // ✅ Initial data load
@@ -106,14 +111,14 @@ export default function CoursesPage() {
 
  
 
-  // ✅ Filter effect
+  
   useEffect(() => {
     if (filterKeyword.trim() !== "") {
       filterCourse();
     }
   }, [filterKeyword]);
 
-  // ✅ UI
+  
   return (
     <div
       className="min-h-screen from-[#dbeafe] to-white"
@@ -197,15 +202,7 @@ export default function CoursesPage() {
       <section className="max-w-7xl mx-auto mt-14 px-6">
         <div className="flex justify-between items-center">
           <h2 className="text-2xl font-semibold text-gray-800">Popular Now</h2>
-          <a
-            href="#"
-            className="text-green-600 font-medium hover:underline flex items-center gap-1"
-          >
-            View All{" "}
-            <span className="text-xs bg-green-600 text-white px-1.5 py-0.5 rounded-full">
-              ●
-            </span>
-          </a>
+         
         </div>
 
         {/* Courses Grid */}
@@ -255,13 +252,17 @@ export default function CoursesPage() {
                     </p>
                   )}
 
-                  <NavLink
-                    to={`/course/${course.title}`}
-                    onClick={() => courseEnroll(course.title)}
-                    className="w-full mt-5 border border-green-600 text-green-600 py-2 rounded-md font-medium hover:bg-green-50 transition"
-                  >
-                    Explore
-                  </NavLink>
+   <NavLink
+  to={`/course/${course.title}`}
+  onClick={() => courseEnroll(course.title)}
+  className="w-full mt-5 inline-flex items-center justify-center gap-2
+             border-2 border-green-600 text-green-600 font-semibold 
+             py-2.5 rounded-xl hover:bg-green-600 hover:text-white 
+             transition-all duration-300 ease-in-out"
+>
+  <span>Explore</span>
+</NavLink>
+
                 </div>
               </div>
             ))

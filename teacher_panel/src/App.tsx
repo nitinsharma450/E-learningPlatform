@@ -4,6 +4,7 @@ import Dashboard from "./pages/Dashboard";
 import Login from "./pages/Login";
 import { ToastContainer } from "react-toastify";
 import CourseAddPage from "./pages/CourseAddPage";
+import QuizAddPage from "./pages/QuizAddPage";
 
 function App() {
   return (
@@ -26,6 +27,7 @@ function App() {
           <Route element={<Layout />}>
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/course" element={<CourseAddPage />} />
+            <Route path="/quizupload" element={<QuizAddPage />} />
           </Route>
         </Routes>
       </BrowserRouter>

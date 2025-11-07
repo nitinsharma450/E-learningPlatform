@@ -51,9 +51,9 @@ export default function Sidebar() {
       </NavLink>
 
       <NavLink
-        to={""}
+        to={"/quizupload"}
         className={` mt-5 flex items-center gap-3 p-3 rounded-lg font-medium ${
-          location.pathname === "/couses"
+          location.pathname === "/quizupload"
             ? "text-blue-600 bg-white"
             : "text-gray-600 hover:bg-gray-100"
         }`}

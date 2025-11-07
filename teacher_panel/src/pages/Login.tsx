@@ -1,17 +1,17 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { FaUser, FaLock } from "react-icons/fa";
 import { Api } from "../services/ApiService";
 import { toast } from "react-toastify";
 import LoginSpinner from "../component/LoginSpinner";
 import { ApiConfigs } from "../Configs/ApiConfigs";
 import { useNavigate } from "react-router";
-import { GiToken } from "react-icons/gi";
+
 
 export default function TeacherLogin() {
   const [loginForm, setLoginForm] = useState({
     
     username: "",
-    subject: "", // 👈 keep empty initially
+    subject: "", 
     password: "",
   });
 

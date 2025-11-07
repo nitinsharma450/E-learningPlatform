@@ -101,7 +101,7 @@ export class teacherController {
           contentType: body.contentType,
         };
 
-        const response = await couseContent.create(newCourse);
+        const response = await CourseContent.create(newCourse);
         return res.status(200).json({
           message: "success",
           status: 200,
