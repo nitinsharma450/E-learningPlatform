@@ -14,3 +14,5 @@ teacherRouter.post('/courseContent/count',teacherController.countCourseContent)
 teacherRouter.post('/profile/search',teacherController.searchProfile)
 teacherRouter.post('/enroll/student/search',teacherController.searchEnrollStudent)
 teacherRouter.post('/student/activeStudent',teacherController.searchActiveStudent)
+teacherRouter.post('/teacher/logout',teacherController.logout)
+

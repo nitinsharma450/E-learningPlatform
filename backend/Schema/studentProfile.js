@@ -7,7 +7,8 @@ const studentSchema=mongoose.Schema({
     role:{type:String,required:true,default:"student"},
     profilePicture:{type:String,default:""},
     lastLogin:{type:Date, required:true},
-    isActive:{type:Boolean,required:true}
+    isActive:{type:Boolean,required:true},
+    isBlocked:{type:Boolean,default:false}
 })
 
 export const studentProfile=mongoose.model('studentProfile',studentSchema)

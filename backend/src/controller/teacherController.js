@@ -9,7 +9,7 @@ import { CourseContent } from "../../Schema/CourseContent.js";
 import { title } from "process";
 import { EnrollCourse } from "../../Schema/EnrollCourse.js";
 import { studentProfile } from "../../Schema/studentProfile.js";
-
+import { io } from "../../index.js";
 
 export class teacherController {
   static async login(req, res) {
@@ -18,9 +18,17 @@ export class teacherController {
       console.log("loginform is ", loginForm);
       loginForm.username = loginForm.username.toLowerCase();
 
+
+
       let details = await Teacher.findOne({ username: loginForm.username });
       console.log(details);
       if (details) {
+       
+        if(details.isBlocked){
+    return res.status(403).send({message:"Your account has been blocked. Please contact the administrator.",status:403})
+        }
+
+
         if (
           details.password == loginForm.password &&
           details.subject == loginForm.subject
@@ -35,10 +43,15 @@ export class teacherController {
             SecretConfigs.JWT_SECRET_KEY,
             { expiresIn: "3h" }
           );
+           let response=await Teacher.findOneAndUpdate(
+            { username: loginForm.username },
+            { $set: { isActive: true, lastLogin: new Date() } }
+          );
 
+          io.emit("userStatusChange");
           res
             .status(200)
-            .send({ message: "success", status: 200, token, data: details });
+            .send({ message: "success", status: 200, token, data: response });
         } else {
           res.status(401).send({ message: "invalid credentials", status: 401 });
         }
@@ -136,23 +149,25 @@ export class teacherController {
     }
   }
   static async countCourseContent(req, res) {
-  try {
-    const { subject } = req.body;
-    console.log(subject)
+    try {
+      const { subject } = req.body;
+      console.log(subject);
 
-    if (!subject) {
-      return res.status(400).send({ message: "Title is required" });
+      if (!subject) {
+        return res.status(400).send({ message: "Title is required" });
+      }
+
+      // Correct method name and logic
+      const count = await CourseContent.countDocuments({ title: subject });
+
+      return res.status(200).send({ message: "success", data: count });
+    } catch (error) {
+      console.error("Count course content error:", error);
+      return res
+        .status(500)
+        .send({ message: "Internal server error", error: error.message });
     }
-
-    // Correct method name and logic
-    const count = await CourseContent.countDocuments({ title:subject });
-
-    return res.status(200).send({ message: "success", data: count });
-  } catch (error) {
-    console.error("Count course content error:", error);
-    return res.status(500).send({ message: "Internal server error", error: error.message });
   }
-}
   static async searchProfile(req, res) {
     try {
       const { user_id } = req.body;
@@ -176,61 +191,90 @@ export class teacherController {
     }
   }
 
-  static async searchEnrollStudent(req,res){
-
+  static async searchEnrollStudent(req, res) {
     try {
-      let title=req.body;
-      console.log(title)
+      let title = req.body;
+      console.log(title);
 
-      if(title){
-        let course={courseTitle:title.subject}
-       let count= await EnrollCourse.countDocuments(course)
+      if (title) {
+        let course = { courseTitle: title.subject };
+        let count = await EnrollCourse.countDocuments(course);
 
-       if(count>0)
-       {
-        return res.status(200).send({message:'success',data:count})
-       }
-       else{
-        return res.status(200).send({message:'suucess',data:0})
-       }
+        if (count > 0) {
+          return res.status(200).send({ message: "success", data: count });
+        } else {
+          return res.status(200).send({ message: "suucess", data: 0 });
+        }
       }
-      
     } catch (error) {
-      return res.status(500).send({error:error.message})
+      return res.status(500).send({ error: error.message });
     }
   }
 
- static async searchActiveStudent(req, res) {
-  try {
-    // Step 1: Find all active enrollments
-    const enrollments = await EnrollCourse.find({ isActive: true });
+  static async searchActiveStudent(req, res) {
+    try {
+      // Step 1: Find all active enrollments
+      const enrollments = await EnrollCourse.find({ isActive: true });
 
-    // Step 2: If no active enrollments
-    if (enrollments.length === 0) {
-      return res.status(200).send({ message: "No active student profiles found" });
+      // Step 2: If no active enrollments
+      if (enrollments.length === 0) {
+        return res
+          .status(200)
+          .send({ message: "No active student profiles found" });
+      }
+
+      // Step 3: Get all unique user IDs
+      const userIds = enrollments.map((enroll) => enroll.user_id);
+
+      // Step 4: Fetch all student profiles matching those IDs
+      const studentProfiles = await studentProfile.find({
+        userId: { $in: userIds },
+      });
+
+      // Step 5: Send response
+      return res.status(200).send({
+        message: "success",
+        data: studentProfiles,
+      });
+    } catch (error) {
+      console.error("Search active student error:", error);
+      return res.status(500).send({
+        message: "Internal server error",
+        error: error.message,
+      });
+    }
+  }
+
+ static async logout(req, res) {
+  try {
+    const { teacherId } = req.body;
+
+    if (!teacherId) {
+      return res.status(400).send({ message: "teacherId is required" });
     }
 
-    // Step 3: Get all unique user IDs
-    const userIds = enrollments.map(enroll => enroll.user_id);
+    const response = await Teacher.findOneAndUpdate(
+      { _id: teacherId },
+      { $set: { isActive: false } },
+      { new: true } // return updated document
+    );
 
-    // Step 4: Fetch all student profiles matching those IDs
-    const studentProfiles = await studentProfile.find({ userId: { $in: userIds } });
+    if (!response) {
+      return res.status(404).send({ message: "Teacher not found" });
+    }
 
-    // Step 5: Send response
+    // 🔔 real-time update
+    io.emit("userStatusChange");
+
     return res.status(200).send({
-      message: "success",
-      data: studentProfiles,
+      message: "logout success",
+      data: response
     });
 
   } catch (error) {
-    console.error("Search active student error:", error);
-    return res.status(500).send({
-      message: "Internal server error",
-      error: error.message,
-    });
+    console.error(error);
+    return res.status(500).send({ message: "internal server error" });
   }
 }
 
-
-  
 }

@@ -7,6 +7,7 @@ import { studentProfile } from "../../Schema/studentProfile.js";
 import { ServerConfigs } from "../configs/ServerConfigs.js";
 import dotenv from "dotenv";
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import Rating from "../../Schema/rating.js";
 dotenv.config();
 export class studentController {
   static async searchAll(req, res) {
@@ -36,19 +37,22 @@ export class studentController {
       }
       let key = filterKey.key;
 
-      let response = await Course.find({
-        $or: [
-          { title: { $regex: key, $options: "i" } }, // Like on title
-          { description: { $regex: key, $options: "i" } },
-          { category: { $regex: key, $options: "i" } },
-          { level: { $regex: key, $options: "i" } },
-        ],
-      });
+      let response = await Course.aggregate([
+        {
+          $match: {
+            $or: [
+              { title: { $regex: key, $options: "i" } },
+
+              { category: { $regex: key, $options: "i" } },
+              { level: { $regex: key, $options: "i" } },
+            ],
+          },
+        },
+      ]);
 
       response = response.map((course) => {
-        const c = course.toObject(); // convert to plain object
-        c.thumbnail = `${ServerConfigs.Host}:${ServerConfigs.Port}/${ServerConfigs.PublicFolder}/${c.thumbnail}`;
-        return c;
+        course.thumbnail = `${ServerConfigs.Host}:${ServerConfigs.Port}/${ServerConfigs.PublicFolder}/${course.thumbnail}`;
+        return course;
       });
 
       if (response.length > 0) {
@@ -153,9 +157,9 @@ export class studentController {
   }
 
   static async searchCourseByTitle(req, res) {
-    let {title} = req.body
+    let { title } = req.body;
 
-    console.log( 'course title is :',title);
+    console.log("course title is :", title);
     try {
       console.log(title);
       let course = await CourseContent.find({ title });
@@ -232,11 +236,11 @@ export class studentController {
 
   static async searchDoubt(req, res) {
     let { userPrompt } = req.body;
-    console.log(userPrompt)
+    console.log(userPrompt);
     let SYSTEM_PROMPT = `
 You are a doubt solver, an expert in all subjects related to software development,
 including web development, mobile app development, AI/ML, data science, Python, Java, C++, 
-React, Node.js, Express, MongoDB, SQL, APIs, frameworks, and related technologies.
+React, Node.js, Express, MongoDB, SQL, APIs, frameworks, and related technologies and also give some response when some greet.
 
 Your role and behavior:
 - Only answer questions related to coding, software development, frameworks, or technology tools.
@@ -300,6 +304,7 @@ Your role and behavior:
 15) Question: "Solve this math equation: 2x + 5 = 15"
    Answer:"sorry i can't answer these ques"
 
+
 Follow these rules **strictly**.  
 Never answer anything that is not related to software development, programming, or technology.
 `;
@@ -310,7 +315,7 @@ Never answer anything that is not related to software development, programming, 
 
       const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
       const model = genAI.getGenerativeModel({
-        model: "gemini-1.5-flash"
+        model: "gemini-2.5-flash",
       });
 
       const prompt = `${SYSTEM_PROMPT}\nUser question: ${userPrompt}`;
@@ -324,7 +329,39 @@ Never answer anything that is not related to software development, programming, 
     }
   }
 
-  
+  static async rateCourse(req, res) {
+    try {
+      let details = req.body;
+      console.log(details);
+      if (details) {
+        let response = await Rating.create({
+          studentId: details.studentId,
+          courseId: details.courseId,
+          rating: details.rating,
+          time: Date.now(),
+        });
+
+        let ratings = await Rating.find({ courseId: details.courseId });
+
+        let sum = ratings.reduce((sum, value) => {
+          return sum + value.rating;
+        }, 0);
+
+        let avgRating = sum / ratings.length;
+        await Course.findByIdAndUpdate(details.courseId, {
+          $set: { rating: avgRating },
+        });
+
+        if (response) {
+          return res
+            .status(200)
+            .send({ message: "Thanks For Yours Rating ", status: 200 });
+        } else {
+          return res.status(402).send({ message: "some went wrong" });
+        }
+      }
+    } catch (error) {
+      return res.status(500).send({ message: error });
+    }
+  }
 }
-
-
