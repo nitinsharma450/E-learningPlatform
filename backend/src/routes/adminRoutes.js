@@ -26,6 +26,8 @@ adminRouter.post('/course/searchAll',adminController.search)
 adminRouter.post('/course/filter',adminController.filter)
 adminRouter.post('/course/count',adminController.countCoures)
 adminRouter.post('/course/searchTitles',adminController.searchSubjectTitle)
+adminRouter.post('/course/getTopRatedCourse',adminController.getTopRatedCourse)
+adminRouter.post('/course/getRecentRatings',adminController.getRecentRatings)
 
 //student
 
@@ -34,3 +36,4 @@ adminRouter.post('/student/activeStudents',adminController.searchActiveStudents)
 adminRouter.post('/student/searchAll',adminController.searchAllStudent)
 adminRouter.post('/student/getActiveStudentProfile',adminController.activeStudentProfile)
 adminRouter.post('/student/blockUnblock',adminController.blockUnblockStudent)
+

@@ -6,6 +6,7 @@ import Course from "../../Schema/Course.js";
 import path from "path";
 import { studentProfile } from "../../Schema/studentProfile.js";
 import { io } from "../../index.js";
+import Rating from "../../Schema/rating.js";
 
 export class adminController {
   static async teacherCreate(req, res) {
@@ -330,7 +331,7 @@ export class adminController {
         return res.status(200).send({
           message: "Teacher unblocked successfully",
           data: response,
-          status:200
+          status: 200,
         });
       }
 
@@ -350,7 +351,7 @@ export class adminController {
       return res.status(200).send({
         message: "Teacher blocked successfully",
         data: updatedTeacher,
-        status:200
+        status: 200,
       });
     } catch (error) {
       console.error(error);
@@ -373,7 +374,7 @@ export class adminController {
         return res.status(200).send({
           message: "Teacher unblocked successfully",
           data: response,
-          status:200
+          status: 200,
         });
       }
 
@@ -393,7 +394,7 @@ export class adminController {
       return res.status(200).send({
         message: "Student blocked successfully",
         data: updatedStudent,
-        status:200
+        status: 200,
       });
     } catch (error) {
       console.error(error);
@@ -401,39 +402,86 @@ export class adminController {
     }
   }
 
-  static async getTeacherById(req,res){
-
+  static async getTeacherById(req, res) {
     try {
-      let {teacherId}=req.body
+      let { teacherId } = req.body;
 
-      let response=await Teacher.find({_id:teacherId})
+      let response = await Teacher.find({ _id: teacherId });
 
-      if(response){
-        return res.status(200).send({message:'success',data:response})
+      if (response) {
+        return res.status(200).send({ message: "success", data: response });
       }
     } catch (error) {
-       console.log(error)
-       return res.status(500).send({message:error})
+      console.log(error);
+      return res.status(500).send({ message: error });
     }
   }
 
-  static async updateTeacher(req,res){
-      try {
-        let teacherForm=req.body;
+  static async updateTeacher(req, res) {
+    try {
+      let teacherForm = req.body;
 
-        console.log(teacherForm)
-        if(teacherForm){
-         let response= await Teacher.findByIdAndUpdate(teacherForm.teacherId,{$set:{name:teacherForm.name,username:teacherForm.username,subject:teacherForm.subject}})
-         if(response){
-          return res.status(200).send({message:'Teacher updated successfully',status:200})
-         }
-         else{
-          return res.status(400).send({message:'error in updating teacher',status:400})
-         }
+      console.log(teacherForm);
+      if (teacherForm) {
+        let response = await Teacher.findByIdAndUpdate(teacherForm.teacherId, {
+          $set: {
+            name: teacherForm.name,
+            username: teacherForm.username,
+            subject: teacherForm.subject,
+          },
+        });
+        if (response) {
+          return res
+            .status(200)
+            .send({ message: "Teacher updated successfully", status: 200 });
+        } else {
+          return res
+            .status(400)
+            .send({ message: "error in updating teacher", status: 400 });
         }
-      } catch (error) {
-        console.log(error)
-        return res.status(500).send({message:error})
       }
+    } catch (error) {
+      console.log(error);
+      return res.status(500).send({ message: error });
+    }
+  }
+
+ static async getTopRatedCourse(req, res) {
+  try {
+    let ratedCourse = await Course.find({ rating: { $gte: 4 } });
+
+    if (ratedCourse.length === 0) {
+      return res.status(404).send({ message: "No top-rated courses found" });
+    }
+
+    ratedCourse = ratedCourse.map((course) => {
+      course.thumbnail = `${ServerConfigs.Host}:${ServerConfigs.Port}/${ServerConfigs.PublicFolder}/${course.thumbnail}`;
+      return course;
+    });
+
+    return res.status(200).send({ message: "success", data: ratedCourse });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).send({ message: error.message });
+  }
+}
+
+  static async getRecentRatings(req, res) {
+    try {
+      const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000);
+
+      const recentRatings = await Rating.find({
+        time: { $gte: tenMinutesAgo },
+      });
+
+      if (recentRatings) {
+        return res
+          .status(200)
+          .send({ message: "success", data: recentRatings });
+      }
+    } catch (error) {
+      console.log(error);
+      return res.status(500).send({ message: error });
+    }
   }
 }

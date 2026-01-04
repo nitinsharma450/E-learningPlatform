@@ -15,3 +15,5 @@ studentRouter.post('/course/searchCourseByTitle',studentController.searchCourseB
 studentRouter.post('/course/Enroll',studentController.enroll)
 studentRouter.post('/doubt/aichat',studentController.searchDoubt)
 studentRouter.post('/course/rateCourse',studentController.rateCourse)
+studentRouter.post('/enrolledCourses',studentController.enrolledCourses)
+studentRouter.post('/course/recommandations',studentController.courseRecommendations)

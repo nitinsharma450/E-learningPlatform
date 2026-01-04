@@ -7,6 +7,7 @@ const courseSchema=mongoose.Schema({
     level:{type:String,required:true},
     duration:{type:String,required:true},
     thumbnail:{type:String,required:true},
+    rating:{type:Number},
 
     teacher:{
         type:mongoose.Schema.Types.ObjectId,

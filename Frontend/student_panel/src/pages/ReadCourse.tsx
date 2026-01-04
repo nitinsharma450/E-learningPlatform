@@ -34,7 +34,7 @@ export default function CoursePDFViewer() {
   const [scale, setScale] = useState(1.0);
   const [darkMode, setDarkMode] = useState(false);
   const [fullscreen, setFullscreen] = useState(false);
-  const [courseId,setCourseId]=useState<any>("")
+  // const [courseId,setCourseId]=useState<any>("")
   const [studentId,setStudentId]=useState<any>()
 
   const [pdfList, setPdfList] = useState<any[]>([]);
@@ -53,11 +53,9 @@ const [hasRated, setHasRated] = useState<boolean>(false);
 
 
   const viewerRef = useRef<HTMLDivElement | null>(null);
-  const { coursetitle } = useParams();
+  const { coursetitle, courseId } = useParams();
 
-
-
-async function getStudentId(){
+  async function getStudentId(){
   const tokenData = localStorage.getItem(ApiConfigs.TOKEN_CREDENTIAL);
       if (tokenData) {
         const parsed = JSON.parse(tokenData);
@@ -145,7 +143,7 @@ async function submitRating() {
         const response = await Api("course/searchCourseByTitle", { title: coursetitle });
         const courses = response.data;
         console.log('courseData',courses)
-        setCourseId(courses[0]._id)
+        // setCourseId(courses[0]._id)
 
         if (Array.isArray(courses) && courses.length > 0) {
           setPdfList(courses);

@@ -22,6 +22,7 @@ import {
   Tooltip,
   Legend,
 } from "chart.js";
+import { MdOutlineStarBorder } from "react-icons/md";
 
 ChartJS.register(
   CategoryScale,
@@ -44,6 +45,9 @@ export default function Dashboard() {
   const [activeStudentProfile, setActiveStudentProfile] = useState<any[]>([]);
   const[activeTeacherProfile,setActiveTeacherProfile]=useState<any[]>([])
   const[numberOfActiveTeacher,setNumberOfActiveTeacher]=useState<number>(0)
+  const[recentRatings,setRecentRatings]=useState<any[]>([])
+  const[recentActivity,setRecentActivity]=useState<any>(false)
+  const[topCourse,setTopCourse]=useState<any>([])
   const navigate = useNavigate();
 
   const socket = io("http://localhost:3333");
@@ -152,11 +156,32 @@ export default function Dashboard() {
     setLoading(false);
   }
 
+  async function fetchTopCourses(){
+    if(await AuthenticationService.isAuthenticated()){
+        let response=await Api('course/getTopRatedCourse')
+        console.log(response)
+        if(response?.data){
+              setTopCourse(response.data)
+        }
+    }
+  }
+
+  async function getRecentRatings(){
+    if(await AuthenticationService.isAuthenticated()){
+      let response=await Api('course/getRecentRatings')
+      if(response.data && response.data.length>0){
+        setRecentRatings(response.data)
+        setRecentActivity(true)
+      }
+    }
+  }
+
   useEffect(() => {
     countTeacher();
     countCourses();
     fetchProfile();
     countStudent();
+    fetchTopCourses()
   }, []);
 
   useEffect(() => {
@@ -164,6 +189,7 @@ export default function Dashboard() {
     countActiveTeacher()
     getActiveStudentProfile()
     getActiveTeacherProfile()
+    getRecentRatings()
 
     socket.on("userStatusChange", () => {
       countActiveStudent();
@@ -171,8 +197,11 @@ export default function Dashboard() {
       getActiveStudentProfile();
       getActiveTeacherProfile();
 
-      
+     
     });
+    socket.on('courseRatingUpdated',()=>{
+      getRecentRatings();
+    })
 
     return () => {
       socket.off("userStatusChange");
@@ -470,6 +499,138 @@ export default function Dashboard() {
     </div>
   )}
 </div>
+
+{/* Top Rated Course */}
+
+<div className="max-w-7xl mx-auto px-6 mt-16">
+  {/* Section Header */}
+  <div className="flex items-center gap-3 mb-10">
+    <div className="inline-flex items-center gap-2 bg-gradient-to-r from-yellow-100 to-yellow-50 
+                    border border-yellow-200 text-yellow-700 
+                    px-5 py-2 rounded-full font-semibold shadow-sm">
+      <MdOutlineStarBorder className="text-yellow-500 text-xl" />
+      Top Rated Courses
+    </div>
+  </div>
+
+  {/* Course Grid */}
+  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+    {topCourse.map((course: any) => (
+      <div
+        key={course._id}
+        className="group bg-white rounded-3xl shadow-md hover:shadow-2xl 
+                   transition-all duration-300 overflow-hidden border border-gray-100"
+      >
+        {/* Thumbnail */}
+        <div className="relative h-52 overflow-hidden">
+          <img
+            src={course.thumbnail}
+            alt={course.title}
+            className="w-full h-full object-cover 
+                       transition-transform duration-500 group-hover:scale-105"
+          />
+
+          {/* Rating Badge */}
+          <div className="absolute top-4 right-4 bg-yellow-500 text-white 
+                          text-sm font-semibold px-3 py-1 rounded-full shadow">
+            ⭐ {course.rating?.toFixed(1) || "0.0"}
+          </div>
+        </div>
+
+        {/* Content */}
+        <div className="p-6 space-y-4">
+          <h2 className="text-lg font-bold text-gray-900 leading-snug">
+            {course.title}
+          </h2>
+
+          <p className="text-sm text-gray-600 line-clamp-2">
+            {course.description}
+          </p>
+
+          {/* Tags */}
+          <div className="flex flex-wrap gap-2">
+            <span className="bg-blue-50 text-blue-700 text-xs font-medium px-3 py-1 rounded-full">
+              {course.category}
+            </span>
+            <span className="bg-green-50 text-green-700 text-xs font-medium px-3 py-1 rounded-full">
+              {course.level}
+            </span>
+          </div>
+
+          {/* Footer */}
+          <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+            <span className="text-sm text-gray-500">
+              ⏱ {course.duration}
+            </span>
+
+           
+          </div>
+        </div>
+      </div>
+    ))}
+  </div>
+</div>
+
+
+{recentActivity && (
+<div className="   ">
+  {/* Section Header */}
+  <div className="flex items-center gap-3 mb-6">
+    <span className="text-xl">🕒</span>
+    <h2 className="text-2xl font-bold text-gray-800">
+      Recent Activity
+    </h2>
+  </div>
+
+  {/* Activity List */}
+  <div className="space-y-5">
+    {recentRatings.map((rating: any) => (
+      <div
+        key={rating._id}
+        className="bg-white border border-gray-200 rounded-2xl p-5 
+                   shadow-sm hover:shadow-lg transition duration-300"
+      >
+        {/* Top Row */}
+        <div className="flex justify-between items-center">
+          <h3 className="text-lg font-semibold text-gray-900">
+            📘 Course Rated
+          </h3>
+
+          {/* Rating Badge */}
+          <span className="flex items-center gap-1 bg-yellow-100 
+                           text-yellow-700 text-sm font-semibold 
+                           px-3 py-1 rounded-full">
+            ⭐ {rating.rating}
+          </span>
+        </div>
+
+        {/* Details */}
+        <div className="mt-3 text-sm text-gray-600 space-y-1">
+          <p>
+            <span className="font-medium text-gray-800">Course ID:</span>{" "}
+            {rating.courseId}
+          </p>
+          <p>
+            <span className="font-medium text-gray-800">Rated by:</span>{" "}
+            {rating.studentId}
+          </p>
+        </div>
+
+        {/* Time */}
+        {rating.time && (
+          <p className="mt-3 text-xs text-gray-400">
+            ⏱ {new Date(rating.time).toLocaleString()}
+          </p>
+        )}
+      </div>
+    ))}
+  </div>
+</div>
+)}
+
+
+
+
 
     </>
   );

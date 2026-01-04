@@ -1,46 +1,40 @@
-import { Route } from "react-router"
-import { BrowserRouter, Routes } from "react-router"
-
-
-import { lazy, Suspense } from "react"
-import Spinner from "./components/Spinner"
+import { BrowserRouter, Routes, Route } from "react-router";
+import { lazy, Suspense } from "react";
+import Spinner from "./components/Spinner";
 import { ToastContainer } from "react-toastify";
-import ReadCourse from "./pages/ReadCourse";
 
+import ReadCourse from "./pages/ReadCourse";
+import EnrolledCourse from "./pages/EnrolledCourse";
+import Layout from "./components/Layout";
+
+const LazyDashboard = lazy(() => import("./pages/Dashboard"));
+const LazyLogin = lazy(() => import("./pages/Login"));
 
 function App() {
-
-  const LazyDashboard = lazy(() => import('./pages/Dashboard'));
-  const LazyLogin = lazy(() => import('./pages/Login'));
-
   return (
     <>
-    
-<ToastContainer
-        position="top-right" // top-left, bottom-right, etc.
-        autoClose={3000} // auto close in ms
-        hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-      />
+      <ToastContainer position="top-right" autoClose={3000} />
 
-   <BrowserRouter>
-   
-   <Routes>
+      <BrowserRouter>
+        <Suspense fallback={<Spinner />}>
+          <Routes>
+            {/* Public Route */}
+            <Route path="/login" element={<LazyLogin />} />
 
-
-    <Route path="/"  element={<Suspense fallback={<Spinner />}> <LazyDashboard /></Suspense>}/>
-    <Route path="/login"  element={<Suspense fallback={<Spinner />}> <LazyLogin /></Suspense>}/>
-    <Route  path="/course/:coursetitle" element={<ReadCourse />}/>
-   </Routes>
-   
-   </BrowserRouter>
-   </>
-  )
+            {/* Layout Routes */}
+            <Route element={<Layout />}>
+              <Route path="/" element={<LazyDashboard />} />
+              <Route path="/enrolledCourse" element={<EnrolledCourse />} />
+              <Route
+                path="/course/:coursetitle/:courseId"
+                element={<ReadCourse />}
+              />
+            </Route>
+          </Routes>
+        </Suspense>
+      </BrowserRouter>
+    </>
+  );
 }
 
-export default App
+export default App;

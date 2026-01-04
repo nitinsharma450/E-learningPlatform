@@ -1,0 +1,126 @@
+
+
+services:
+  # =====================================================
+  # FRONTEND SERVICES
+  # =====================================================
+
+  admin_panel:
+    build:
+      context: ./Frontend/admin_panel
+      dockerfile: Dockerfile
+    container_name: admin_panel
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./Frontend/admin_panel:/app
+      - /app/node_modules
+    env_file:
+      - ./Frontend/admin_panel/.env
+
+  student_panel:
+    build:
+      context: ./Frontend/student_panel
+      dockerfile: Dockerfile
+    container_name: student_panel
+    ports:
+      - "5174:5173"
+    volumes:
+      - ./Frontend/student_panel:/app
+      - /app/node_modules
+    env_file:
+      - ./Frontend/student_panel/.env
+
+  teacher_panel:
+    build:
+      context: ./Frontend/teacher_panel
+      dockerfile: Dockerfile
+    container_name: teacher_panel
+    ports:
+      - "5175:5173"
+    volumes:
+      - ./Frontend/teacher_panel:/app
+      - /app/node_modules
+    
+
+  # =====================================================
+  # DATABASE
+  # =====================================================
+
+  nosql-db:
+    image: mongo:4.4
+    container_name: nosql-db
+    restart: always
+    ports:
+      - "27017:27017"
+    volumes:
+      - ./backend1/db:/data/db
+
+  # =====================================================
+  # BACKEND MICROSERVICES
+  # =====================================================
+
+  admin:
+    build:
+      context: ./backend1/admin_backend
+      dockerfile: Dockerfile
+    container_name: admin_backend
+    ports:
+      - "3001:3001"
+    restart: always
+    depends_on:
+      - nosql-db
+    volumes:
+      - ./backend1/admin_backend:/app
+      - /app/node_modules
+    env_file:
+      - ./backend1/admin_backend/.env
+
+  teacher:
+    build:
+      context: ./backend1/teacher_backend
+      dockerfile: Dockerfile
+    container_name: teacher_backend
+    ports:
+      - "3003:3003"
+    restart: always
+    depends_on:
+      - nosql-db
+    volumes:
+      - ./backend1/teacher_backend:/app
+      - /app/node_modules
+    env_file:
+      - ./backend1/teacher_backend/.env
+
+  student:
+    build:
+      context: ./backend1/student_backend
+      dockerfile: Dockerfile
+    container_name: student_backend
+    ports:
+      - "3002:3002"
+    restart: always
+    depends_on:
+      - nosql-db
+    volumes:
+      - ./backend1/student_backend:/app
+      - /app/node_modules
+    env_file:
+      - ./backend1/student_backend/.env
+
+  # =====================================================
+  # GATEWAY / NGINX PROXY
+  # =====================================================
+
+  nginx-proxy:
+    build:
+      context: ./backend1/gateway
+      dockerfile: Dockerfile
+    container_name: nginx_proxy
+    depends_on:
+      - admin
+      - teacher
+      - student
+    ports:
+      - "80:80"
+

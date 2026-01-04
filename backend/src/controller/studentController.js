@@ -351,6 +351,7 @@ Never answer anything that is not related to software development, programming, 
         await Course.findByIdAndUpdate(details.courseId, {
           $set: { rating: avgRating },
         });
+        io.emit('courseRatingUpdated')
 
         if (response) {
           return res
@@ -364,4 +365,65 @@ Never answer anything that is not related to software development, programming, 
       return res.status(500).send({ message: error });
     }
   }
+
+  static async enrolledCourses(req, res) {
+  try {
+    const { userId } = req.body; // or req.user.id if using JWT
+
+    if (!userId) {
+      return res.status(400).json({ message: "User ID required" });
+    }
+
+    // 1️⃣ Fetch enrolled courses
+    const enrollments = await EnrollCourse.find({ user_id: userId });
+
+    // 2️⃣ Fetch course details using courseTitle
+    const enrolledCoursesWithDetails = await Promise.all(
+      enrollments.map(async (enroll) => {
+        const course = await Course.findOne({
+          title: enroll.courseTitle,
+        });
+
+        if (course?.thumbnail) {
+          course.thumbnail = `${ServerConfigs.Host}:${ServerConfigs.Port}/${ServerConfigs.PublicFolder}/${course.thumbnail}`;
+        }
+
+        return {
+          ...enroll.toObject(),
+          courseDetails: course,
+        };
+      })
+    );
+
+    return res.status(200).json({data:enrolledCoursesWithDetails});
+  } catch (error) {
+    console.error("Enrolled course error:", error);
+    return res.status(500).json({
+      message: "Failed to fetch enrolled courses",
+      error: error.message,
+    });
+  }
+}
+
+static async courseRecommendations(req,res){
+
+  try {
+    let recommandCourse = await Course.find({ rating: { $gte: 4 } });
+
+    if (recommandCourse.length === 0) {
+      return res.status(404).send({ message: "No top-rated courses found" });
+    }
+
+    recommandCourse = recommandCourse.map((course) => {
+      course.thumbnail = `${ServerConfigs.Host}:${ServerConfigs.Port}/${ServerConfigs.PublicFolder}/${course.thumbnail}`;
+      return course;
+    });
+
+    return res.status(200).send({ message: "success", data: recommandCourse });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).send({ message: error.message });
+  }
+}
+
 }

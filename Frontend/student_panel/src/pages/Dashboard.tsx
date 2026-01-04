@@ -1,29 +1,21 @@
 import { FaPhoneAlt, FaSearch } from "react-icons/fa";
 import { useEffect, useState } from "react";
 import { Api } from "../Service/ApiService";
-import { NavLink, useNavigate } from "react-router";
+import { NavLink, useLocation, useNavigate } from "react-router";
 import { ApiConfigs } from "../Configs/ApiConfigs";
 import { AuthenticationService } from "../Service/AuthencationService";
-import Logout from "../components/Logout";
-import { io } from "socket.io-client";
-import { socket } from "../socket";
-
 
 export default function CoursesPage() {
   const [courseList, setCourseList] = useState<any[]>([]);
   const [filterKeyword, setFilterKeyword] = useState<string>("");
-  const [userProfile, setUserProfile] = useState<any>({});
-  const [loading, setLoading] = useState<boolean>(false);
-  const [userId, setUserId] = useState<string>("");
-  let navigate=useNavigate()
 
-   
-
+  let navigate = useNavigate();
 
   // ✅ Fetch all courses
   async function getAllCourse() {
     try {
       const response = await Api("course/searchAll");
+      console.log(response.data);
       if (response?.data) {
         setCourseList(response.data);
       }
@@ -48,29 +40,6 @@ export default function CoursesPage() {
     }
   }
 
-  // ✅ Fetch user profile (if logged in)
-  async function fetchProfile() {
-    setLoading(true);
-    try {
-      if (await AuthenticationService.isAuthenticated()) {
-        const raw = localStorage.getItem(ApiConfigs.TOKEN_CREDENTIAL);
-        const parsed = raw ? JSON.parse(raw) : null;
-
-        const response = await Api("profile/search", {
-          email: parsed?.userDetails?.email,
-        });
-
-        if (response?.data) {
-          setUserProfile(response.data);
-          setUserId(response.data.userId || response.data._id);
-        }
-      }
-    } catch (error) {
-      console.error("Error fetching profile:", error);
-    }
-    setLoading(false);
-  }
-
   // ✅ Enroll in a course (fixed logic)
   async function courseEnroll(courseTitle: string) {
     try {
@@ -79,20 +48,18 @@ export default function CoursesPage() {
         const parsed = raw ? JSON.parse(raw) : null;
         const user_id = parsed?.userDetails?.uid;
 
-        
-
         const enrollPayload = { user_id, courseTitle };
         console.log("Enroll Payload:", enrollPayload);
 
         const response = await Api("course/enroll", enrollPayload);
         if (response?.status === 200) {
           console.log("✅ Enrolled successfully!");
-        // socket.emit("userStatusChange");
+          // socket.emit("userStatusChange");
         } else {
           console.log("❌ Enrollment failed:", response);
         }
       } else {
-        navigate('/login')
+        navigate("/login");
         console.warn("User not authenticated");
       }
     } catch (error) {
@@ -100,25 +67,17 @@ export default function CoursesPage() {
     }
   }
 
- 
-
-  
   // ✅ Initial data load
   useEffect(() => {
     getAllCourse();
-    fetchProfile();
   }, []);
 
- 
-
-  
   useEffect(() => {
     if (filterKeyword.trim() !== "") {
       filterCourse();
     }
   }, [filterKeyword]);
 
-  
   return (
     <div
       className="min-h-screen from-[#dbeafe] to-white"
@@ -126,59 +85,15 @@ export default function CoursesPage() {
         background: "linear-gradient(180deg, #dbeafe 0%, #ffffff 100%)",
       }}
     >
-      {/* Navbar */}
-      <header className="flex justify-between items-center px-10 py-4 bg-white shadow-sm sticky top-0 z-50">
-        <div className="flex items-center gap-2">
-          <img
-            src="https://media.geeksforgeeks.org/wp-content/uploads/20210101201641/GeeksforGeeks.png"
-            alt="Logo"
-            className="w-36"
-          />
-        </div>
-        <nav className="flex items-center gap-8 text-gray-700 font-medium">
-          <a href="#" className="hover:text-green-600 transition">
-            Courses
-          </a>
-          <a href="#" className="hover:text-green-600 transition">
-            Tutorials
-          </a>
-          <a href="#" className="hover:text-green-600 transition">
-            Practice
-          </a>
-          <a href="#" className="hover:text-green-600 transition">
-            Jobs
-          </a>
-        </nav>
-
-        {localStorage.getItem(ApiConfigs.TOKEN_CREDENTIAL) ? (
-          <div
-            onClick={() => Logout(userId)}
-            className="bg-gray-900 cursor-pointer text-white px-6 py-2 rounded-lg hover:bg-green-700 transition"
-          >
-            Logout
-          </div>
-        ) : (
-          <NavLink
-            to={"/login"}
-            className="bg-gray-900 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition"
-          >
-            Sign In
-          </NavLink>
-        )}
-      </header>
-
       {/* Title + Search */}
-      <section className="text-center mt-12 px-4">
+      <section className="text-center  px-4">
         <h1 className="text-3xl font-bold text-gray-800">OpenLearn</h1>
         <p className="text-gray-600 mt-2">
           Interactive LIVE & Self-Paced Courses
         </p>
         <div className="flex justify-center items-center mt-2 text-gray-600 gap-2">
           <FaPhoneAlt />{" "}
-          <a
-            className="text-blue-600 hover:underline"
-            href="tel:8800817720"
-          >
+          <a className="text-blue-600 hover:underline" href="tel:8800817720">
             8800817720
           </a>
         </div>
@@ -202,7 +117,6 @@ export default function CoursesPage() {
       <section className="max-w-7xl mx-auto mt-14 px-6">
         <div className="flex justify-between items-center">
           <h2 className="text-2xl font-semibold text-gray-800">Popular Now</h2>
-         
         </div>
 
         {/* Courses Grid */}
@@ -233,6 +147,7 @@ export default function CoursesPage() {
 
                   <h3 className="text-lg font-semibold text-gray-900 leading-tight">
                     {course.title}
+                    {course._id}
                   </h3>
 
                   <div className="flex justify-between items-center mt-2">
@@ -240,7 +155,7 @@ export default function CoursesPage() {
                       {course.level || "Beginner to Advanced"}
                     </p>
                     {course.rating && (
-                      <span className="flex items-center gap-1 bg-yellow-400 text-white text-xs px-2 py-1 rounded">
+                      <span className="flex items-center gap-1 text-black text-xs px-2 py-1 rounded">
                         ⭐ {course.rating}
                       </span>
                     )}
@@ -252,17 +167,16 @@ export default function CoursesPage() {
                     </p>
                   )}
 
-   <NavLink
-  to={`/course/${course.title}`}
-  onClick={() => courseEnroll(course.title)}
-  className="w-full mt-5 inline-flex items-center justify-center gap-2
+                  <NavLink
+                    to={`/course/${course.title}/${course._id}`}
+                    onClick={() => courseEnroll(course.title)}
+                    className="w-full mt-5 inline-flex items-center justify-center gap-2
              border-2 border-green-600 text-green-600 font-semibold 
              py-2.5 rounded-xl hover:bg-green-600 hover:text-white 
              transition-all duration-300 ease-in-out"
->
-  <span>Explore</span>
-</NavLink>
-
+                  >
+                    <span>Explore</span>
+                  </NavLink>
                 </div>
               </div>
             ))
