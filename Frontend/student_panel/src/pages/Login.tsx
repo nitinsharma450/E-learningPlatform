@@ -44,22 +44,33 @@ const firebaseConfig = {
 
 
   async function saveUserDetails() {
-    if (await AuthenticationService.isAuthenticated()) {
-      console.log("Saving user details...");
-      const response = localStorage.getItem(ApiConfigs.TOKEN_CREDENTIAL);
-      const parsedData = response ? JSON.parse(response) : null;
+  try {
+    console.log("Saving user details...");
 
-      if (parsedData && parsedData.userDetails) {
-        try {
-          let response=await Api("save/credentials", parsedData.userDetails);
-          return response;
-          
-        } catch (err) {
-          console.error("Error saving user details:", err);
-        }
-      }
+    const stored = localStorage.getItem(ApiConfigs.TOKEN_CREDENTIAL);
+    const parsedData = stored ? JSON.parse(stored) : null;
+
+    if (!parsedData?.userDetails) {
+      return { status: 400, message: "No user details found" };
     }
+
+    const response = await Api("save/credentials", parsedData.userDetails);
+    console.log("API success response:", response);
+    return response;
+
+  } catch (err:any) {
+    console.error("Error saving user details:", err);
+
+    // 🔴 THIS IS THE KEY LINE
+    if (err.response) {
+      console.log("API error response:", err.response);
+      return err.response;
+    }
+
+    return { status: 500, message: "Server unreachable" };
   }
+}
+
 
   // ✅ Google login handler
   async function handleGoogleLogin() {
@@ -71,8 +82,11 @@ const firebaseConfig = {
       const student_credential = { token, userDetails: user };
       localStorage.setItem(ApiConfigs.TOKEN_CREDENTIAL, JSON.stringify(student_credential));
 
+
       let response=await saveUserDetails(); 
+      console.log('response ',response)
       if(response.status==200){
+        console.log("Google login successful", user);
       socket.emit("userStatusChange", { userId: user.uid, isActive: true });
     toast.success('Login Successful');
       navigate("/");

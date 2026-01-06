@@ -68,53 +68,83 @@ export class studentController {
   }
 
   static async saveCredentials(req, res) {
-    try {
-      const details = req.body;
+  try {
+    const details = req.body;
 
-      // ✅ Validate input
-      if (!details || !details.email || !details.displayName) {
-        return res.status(400).json({ message: "Name and Email are required" });
-      }
-
-      const existingAdmin = await studentProfile.findOne({
-        email: details.email,
+    // ✅ Validate input
+    if (!details || !details.email || !details.displayName) {
+      return res.status(400).json({
+        message: "Name and Email are required",
+        status: 400
       });
-      if (existingAdmin) {
-        let response = await studentProfile.findOneAndUpdate(
-          { email: details.email },
-          { $set: { isActive: true, lastLogin: new Date() } }
-        );
-        io.emit("userStatusChange", {
-          userId: response.userId,
-          isActive: true,
-        });
-        return res.status(200).json({
-          message: "Email already exists",
-          status: 200,
-          data: response,
-        });
-      }
-
-      const studentData = {
-        userId: details.uid,
-        name: details.displayName,
-        email: details.email,
-        role: "student",
-        profilePicture: details.profilePicture || "",
-        lastLogin: details.lastLoginAt,
-        isActive: true,
-      };
-
-      const response = await studentProfile.create(studentData);
-      io.emit("userStatusChange", { userId: response.userId, isActive: true });
-
-      return res
-        .status(200)
-        .json({ message: "Success", data: response, status: 200 });
-    } catch (error) {
-      return res.status(500).json({ error: error.message });
     }
+
+    const existingStudent = await studentProfile.findOne({
+      email: details.email,
+    });
+
+    // ✅ Check if student exists AND is blocked
+    if (existingStudent && existingStudent.isBlocked) {
+      return res.status(500).send({
+        message: "Your account has been blocked. Please contact the administrator.",
+        status: 500
+      });
+    }
+
+    // ✅ If student already exists → update
+    if (existingStudent) {
+      const response = await studentProfile.findOneAndUpdate(
+        { email: details.email },
+        { $set: { isActive: true, lastLogin: new Date() } },
+        { new: true }
+      );
+
+      io.emit("userStatusChange", {
+        userId: response.userId,
+        isActive: true,
+      });
+
+      return res.status(200).json({
+        message: "Login successful",
+        status: 200,
+        data: response,
+      });
+    }
+
+    // ✅ New student creation
+    const studentData = {
+      userId: details.uid,
+      name: details.displayName,
+      email: details.email,
+      role: "student",
+      profilePicture: details.photoURL || "",
+      lastLogin: new Date(),
+      isActive: true,
+      isBlocked: false
+    };
+
+    const response = await studentProfile.create(studentData);
+
+    io.emit("userStatusChange", {
+      userId: response.userId,
+      isActive: true
+    });
+
+    return res.status(200).json({
+      message: "Registration successful",
+      status: 200,
+      data: response
+    });
+
+  } catch (error) {
+    console.error("saveCredentials error:", error);
+    return res.status(500).json({
+      message: "Internal server error",
+      status: 500
+    });
   }
+}
+
 
   static async searchProfile(req, res) {
     try {

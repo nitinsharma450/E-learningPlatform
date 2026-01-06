@@ -372,7 +372,7 @@ export class adminController {
           $set: { isBlocked: false },
         });
         return res.status(200).send({
-          message: "Teacher unblocked successfully",
+          message: "student unblocked successfully",
           data: response,
           status: 200,
         });

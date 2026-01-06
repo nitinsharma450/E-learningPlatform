@@ -8,6 +8,7 @@ import { AuthenticationService } from "../Service/AuthencationService";
 export default function CoursesPage() {
   const [courseList, setCourseList] = useState<any[]>([]);
   const [filterKeyword, setFilterKeyword] = useState<string>("");
+  const [recommendedCourses, setRecommendedCourses] = useState<any[]>([]);
 
   let navigate = useNavigate();
 
@@ -67,9 +68,26 @@ export default function CoursesPage() {
     }
   }
 
+  async function fetchRecommendedCourses() {
+
+try {
+    if(await AuthenticationService.isAuthenticated()){
+       let response=await Api("course/recommandations")
+       if(response?.data){
+      setRecommendedCourses(response.data)
+       }
+    }
+} catch (error) {
+  console.log('error in fetching recommendation',error)
+}
+
+  
+  }
+
   // ✅ Initial data load
   useEffect(() => {
     getAllCourse();
+    fetchRecommendedCourses()
   }, []);
 
   useEffect(() => {
@@ -147,7 +165,7 @@ export default function CoursesPage() {
 
                   <h3 className="text-lg font-semibold text-gray-900 leading-tight">
                     {course.title}
-                    {course._id}
+                    
                   </h3>
 
                   <div className="flex justify-between items-center mt-2">
@@ -185,6 +203,80 @@ export default function CoursesPage() {
           )}
         </div>
       </section>
+
+
+{/* course recommandation */}
+     {localStorage.getItem(ApiConfigs.TOKEN_CREDENTIAL) && (
+  <section className="max-w-7xl mx-auto mt-14 px-6">
+    
+    {/* Header */}
+    <div className="flex items-center justify-between mb-6">
+      <div>
+        <h2 className="text-2xl font-bold text-gray-900">
+          Recommended for You
+        </h2>
+        <p className="text-sm text-gray-500 mt-1">
+          Personalized courses based on your interests
+        </p>
+      </div>
+
+    
+    </div>
+
+    {/* Course Cards */}
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      
+      {/* Card */}
+      {recommendedCourses?.map((course:any) => (
+        <div
+          key={course._id}
+          className="group bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-lg transition-all duration-300 cursor-pointer"
+        >
+          {/* Thumbnail */}
+          <div className="relative overflow-hidden rounded-t-xl">
+            <img
+              src={course.thumbnail}
+              alt={course.title}
+              className="h-40 w-full object-cover group-hover:scale-105 transition-transform duration-300"
+            />
+            <span className="absolute top-3 left-3 bg-indigo-600 text-white text-xs px-3 py-1 rounded-full">
+              {course.level}
+            </span>
+          </div>
+
+          {/* Content */}
+          <div className="p-4">
+            <h3 className="text-sm font-semibold text-gray-900 line-clamp-2">
+              {course.title}
+            </h3>
+
+            <p className="text-xs text-gray-500 mt-1">
+              {course.category}
+            </p>
+
+            {/* Rating */}
+            <div className="flex items-center gap-1 mt-3">
+              <span className="text-yellow-500">★</span>
+              <span className="text-sm font-medium text-gray-800">
+                {course.rating}
+              </span>
+              <span className="text-xs text-gray-500">
+                ({course.totalRatings})
+              </span>
+            </div>
+
+            {/* CTA */}
+            <button className="mt-4 w-full bg-indigo-600 text-white text-sm py-2 rounded-lg hover:bg-indigo-700 transition">
+              Enroll Now
+            </button>
+          </div>
+        </div>
+      ))}
+
+    </div>
+  </section>
+)}
+
     </div>
   );
 }
