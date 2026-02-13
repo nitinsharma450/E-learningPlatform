@@ -19,7 +19,7 @@ services:
     build: ./Frontend/student_panel
     container_name: student_panel
     ports:
-      - "5174:5173"
+      - "5174:5174"
     volumes:
       - ./Frontend/student_panel:/app
       - /app/node_modules
@@ -32,7 +32,7 @@ services:
     build: ./Frontend/teacher_panel
     container_name: teacher_panel
     ports:
-      - "5175:5173"
+      - "5175:5175"
     volumes:
       - ./Frontend/teacher_panel:/app
       - /app/node_modules
