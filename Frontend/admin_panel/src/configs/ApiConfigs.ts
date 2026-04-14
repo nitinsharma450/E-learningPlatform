@@ -1,4 +1,4 @@
- export  const ApiConfigs={
-    TOKEN_CREDENTIAL:'credential',
-    ENDPOINT:'http://localhost:3333/api/admin/'
-}
+export const ApiConfigs = {
+  TOKEN_CREDENTIAL: "credential",
+  ENDPOINT: "https://e-learningplatform-8rc8.onrender.com/api/admin/",
+};
