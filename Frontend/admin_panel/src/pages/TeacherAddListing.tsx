@@ -5,7 +5,7 @@ import { AuthenticationService } from "../services/AuthenticationService";
 import { Api } from "../services/ApiService";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router";
-import { MdBlockFlipped } from "react-icons/md";
+
 import { ImCross } from "react-icons/im";
 
 
@@ -145,323 +145,261 @@ try {
   }, []);
 
   return (
-    <>
-      <div className="p-10">
-        {/* Header Section */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold">Teachers Management</h1>
-            <p className="text-gray-500 text-sm">
-              Manage teachers and their subjects
-            </p>
-          </div>
+   <>
+  {/* ===== Header ===== */}
+  <div className="p-4 md:p-10">
+    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      
+      <div>
+        <h1 className="text-2xl md:text-3xl font-bold">
+          Teachers Management
+        </h1>
+        <p className="text-gray-500 text-sm">
+          Manage teachers and their subjects
+        </p>
+      </div>
 
-          <div>
-            <button
-              onClick={() => showAddTeacherModel(true)}
-              className="flex items-center gap-2 cursor-pointer bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
+      <button
+        onClick={() => showAddTeacherModel(true)}
+        className="w-full md:w-auto flex items-center justify-center gap-2 bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
+      >
+        <AiOutlinePlus size={18} />
+        Add Teacher
+      </button>
+    </div>
+
+    {/* ===== Add Teacher Modal ===== */}
+    {AddTeacherModel && (
+      <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center px-4">
+        <div className="bg-white rounded-lg shadow-lg w-full max-w-md p-4 md:p-6 relative">
+
+          <button
+            onClick={() => showAddTeacherModel(false)}
+            className="absolute top-3 right-3 text-gray-500"
+          >
+            <IoClose size={22} />
+          </button>
+
+          <h2 className="text-lg md:text-xl font-bold mb-1">
+            Add New Teacher
+          </h2>
+          <p className="text-gray-500 text-sm mb-4">
+            Fill details to add teacher
+          </p>
+
+          <form onSubmit={addTeacher} className="space-y-4">
+
+            <input
+              placeholder="Full Name"
+              value={teacherData.name || ""}
+              onChange={(e)=>setAddTeacherData({...teacherData,name:e.target.value})}
+              className="w-full border px-3 py-2 rounded-md"
+            />
+
+            <input
+              placeholder="Username"
+              value={teacherData.username || ""}
+              onChange={(e)=>setAddTeacherData({...teacherData,username:e.target.value})}
+              className="w-full border px-3 py-2 rounded-md"
+            />
+
+            <select
+              value={teacherData.subject || ""}
+              onChange={(e)=>setAddTeacherData({...teacherData,subject:e.target.value})}
+              className="w-full border px-3 py-2 rounded-md"
             >
-              <AiOutlinePlus size={18} />
+              <option>Select Subject</option>
+              {title.map((course, i) => (
+                <option key={i}>{course}</option>
+              ))}
+            </select>
+
+            <input
+              type="password"
+              placeholder="Password"
+              value={teacherData.password || ""}
+              onChange={(e)=>setAddTeacherData({...teacherData,password:e.target.value})}
+              className="w-full border px-3 py-2 rounded-md"
+            />
+
+            <button className="w-full bg-blue-500 text-white py-2 rounded-md">
               Add Teacher
             </button>
-          </div>
+          </form>
         </div>
+      </div>
+    )}
+  </div>
 
-        {/* Modal */}
-        {AddTeacherModel && (
-          <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center px-4">
-            <div className="bg-white rounded-lg shadow-lg w-full max-w-md p-6 relative">
-              {/* Close button */}
-              <button
-                onClick={() => showAddTeacherModel(false)}
-                className="absolute top-3 right-3 text-gray-500 hover:text-black"
-              >
-                <IoClose size={24} />
-              </button>
+  {/* ===== Teachers List ===== */}
+  <div className="p-4 md:p-10">
 
-              {/* Modal Title */}
-              <h2 className="text-xl font-bold mb-1">Add New Teacher</h2>
-              <p className="text-gray-500 text-sm mb-4">
-                Fill in the details to add a new teacher to the platform
-              </p>
+    {/* Header */}
+    <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-6">
+      <div>
+        <h2 className="text-2xl md:text-3xl font-bold text-gray-800">
+          All Teachers
+        </h2>
+        <p className="text-sm text-gray-500">
+          Manage registered teachers
+        </p>
+      </div>
 
-              {/* Form */}
-              <form onSubmit={addTeacher} className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium mb-1">
-                    Full Name
-                  </label>
-                  <input
-                    onChange={(e) =>
-                      setAddTeacherData({
-                        ...teacherData,
-                        name: e.target.value,
-                      })
-                    }
-                    value={teacherData.name || ""}
-                    type="text"
-                    className="w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                  />
+      <span className="self-start md:self-auto text-sm bg-gray-100 px-4 py-1 rounded-full">
+        Total: {showTeacherdetails.length}
+      </span>
+    </div>
+
+    {/* Content */}
+    {loading ? (
+      <div className="flex justify-center py-16">
+        <div className="w-10 h-10 border-4 border-blue-500 border-dashed rounded-full animate-spin"></div>
+      </div>
+    ) : showTeacherdetails.length === 0 ? (
+      <div className="text-gray-400 text-center py-16 text-sm">
+        No teachers found.
+      </div>
+    ) : (
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+
+        {showTeacherdetails.map((teacher: any) => (
+          <div
+            key={teacher._id}
+            className="bg-white rounded-2xl p-4 md:p-6 border shadow-sm hover:shadow-xl transition"
+          >
+
+            {/* Top */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+
+              <div className="flex items-center gap-3">
+                <div className="h-12 w-12 flex items-center justify-center rounded-full bg-blue-500 text-white font-bold">
+                  {teacher.name.charAt(0)}
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-1">
-                    Username
-                  </label>
-                  <input
-                    onChange={(e) =>
-                      setAddTeacherData({
-                        ...teacherData,
-                        username: e.target.value,
-                      })
-                    }
-                    value={teacherData.username || ""}
-                    type="text"
-                    className="w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                  />
+                  <h3 className="font-semibold">{teacher.name}</h3>
+                  <p className="text-xs text-gray-500">{teacher.username}</p>
                 </div>
+              </div>
 
-                <div>
-                  <label className="block text-sm font-medium mb-1">
-                    Subject
-                  </label>
-                  <select
-                    value={teacherData.subject || ""}
-                    onChange={(e) =>
-                      setAddTeacherData({
-                        ...teacherData,
-                        subject: e.target.value,
-                      })
-                    }
-                    className="w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                  >
-                    <option value="">Select Subject</option>
-                    {title.map((course, i) => (
-                      <option key={i} value={course}>
-                        {course}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium mb-1">
-                    Password
-                  </label>
-                  <input
-                    onChange={(e) =>
-                      setAddTeacherData({
-                        ...teacherData,
-                        password: e.target.value,
-                      })
-                    }
-                    value={teacherData.password || ""}
-                    type="password"
-                    className="w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                  />
-                </div>
+              {/* Actions */}
+              <div className="flex flex-wrap gap-2">
 
                 <button
-                  type="submit"
-                  className="w-full bg-blue-500 text-white py-2 rounded-md hover:bg-blue-600"
+                  onClick={()=>{
+                    setteacherId(teacher._id);
+                    getTeacherById(teacher._id);
+                    showTeacherUpdateModel(true);
+                  }}
+                  className="px-3 py-1 text-xs bg-blue-100 text-blue-700 rounded-full"
                 >
-                  Add Teacher
+                  Update
                 </button>
-              </form>
+
+                {teacher.isBlocked ? (
+                  <button
+                    onClick={()=>blockUpBlockteacher(teacher._id)}
+                    className="px-3 py-1 text-xs bg-green-100 text-green-700 rounded-full"
+                  >
+                    Unblock
+                  </button>
+                ) : (
+                  <button
+                    onClick={()=>blockUpBlockteacher(teacher._id)}
+                    className="px-3 py-1 text-xs bg-red-100 text-red-700 rounded-full"
+                  >
+                    Block
+                  </button>
+                )}
+              </div>
+            </div>
+
+            <div className="my-4 border-t"></div>
+
+            {/* Bottom */}
+            <div className="flex justify-between items-center">
+              <span className="px-3 py-1 bg-indigo-100 text-indigo-700 text-xs rounded-full">
+                {teacher.subject}
+              </span>
+
+              <span className="text-xs text-gray-400">
+                Teacher
+              </span>
             </div>
           </div>
-        )}
+        ))}
       </div>
+    )}
+  </div>
 
-      {/* Teachers List */}
-      <div className="p-10">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h2 className="text-3xl font-bold text-gray-800">All Teachers</h2>
-            <p className="text-sm text-gray-500 mt-1">
-              Manage and monitor registered teachers
-            </p>
-          </div>
-          <span className="text-sm text-gray-600 bg-gray-100 px-4 py-1 rounded-full">
-            Total: {showTeacherdetails.length}
-          </span>
+  {/* ===== Update Modal ===== */}
+  {teacherUpdateModel && (
+    <div className="fixed inset-0 flex items-center justify-center bg-black/40 z-50 px-4">
+      <div className="bg-white w-full max-w-md rounded-xl p-4 md:p-6">
+
+        <div className="flex justify-between mb-4">
+          <h2 className="font-semibold text-lg">
+            Update Teacher
+          </h2>
+
+          <ImCross
+            size={15}
+            className="cursor-pointer"
+            onClick={()=>showTeacherUpdateModel(false)}
+          />
         </div>
 
-        {/* Content */}
-        {loading ? (
-          <div className="flex justify-center py-16">
-            <div className="w-10 h-10 border-4 border-blue-500 border-dashed rounded-full animate-spin"></div>
-          </div>
-        ) : showTeacherdetails.length === 0 ? (
-          <div className="text-gray-400 text-center py-16 text-sm">
-            No teachers found.
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {showTeacherdetails.map((teacher: any) => (
-              <div
-                key={teacher._id}
-                className="group bg-white rounded-2xl p-6 border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-300"
-              >
-                {/* Header */}
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <div className="h-14 w-14 flex items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 text-white text-xl font-bold shadow">
-                      {teacher.name.charAt(0).toUpperCase()}
-                    </div>
+        <div className="space-y-3">
 
-                    <div>
-                      <h3 className="text-lg font-semibold text-gray-800">
-                        {teacher.name}
-                      </h3>
-                      <p className="text-sm text-gray-500">
-                        {teacher.username}
-                      </p>
-                    </div>
-                  </div>
+          <input
+            value={teacherDetailsForm.name || ""}
+            onChange={(e)=>setTeacherDetailsForm({...teacherDetailsForm,name:e.target.value})}
+            placeholder="Name"
+            className="w-full border px-3 py-2 rounded-lg"
+          />
 
-                  {/* Actions */}
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => {
-                        setteacherId(teacher._id)
-                        getTeacherById(teacher._id),
-                          showTeacherUpdateModel(true);
-                      }}
-                      className="flex items-center gap-1 px-3 py-1.5 cursor-pointer text-xs font-medium rounded-full bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 transition"
-                    >
-                      Update
-                    </button>
+          <input
+            value={teacherDetailsForm.username || ""}
+            onChange={(e)=>setTeacherDetailsForm({...teacherDetailsForm,username:e.target.value})}
+            placeholder="Username"
+            className="w-full border px-3 py-2 rounded-lg"
+          />
 
-                    {teacher.isBlocked ? (
-                      <button
-                        onClick={() => blockUpBlockteacher(teacher._id)}
-                        className="flex cursor-pointer items-center gap-1 px-3 py-1.5 text-xs font-medium rounded-full bg-green-50 text-green-700 border border-green-200 hover:bg-green-100 transition"
-                      >
-                        Unblock
-                      </button>
-                    ) : (
-                      <button
-                        onClick={() => {
-                          blockUpBlockteacher(teacher._id);
-                        }}
-                        className="flex items-center gap-1 px-3 py-1.5 cursor-pointer text-xs font-medium rounded-full bg-red-50 text-red-700 border border-red-200 hover:bg-red-100 transition"
-                      >
-                        <MdBlockFlipped size={14} />
-                        Block
-                      </button>
-                    )}
-                  </div>
-                </div>
+          <input
+            type="password"
+            value={teacherDetailsForm.password || ""}
+            onChange={(e)=>setTeacherDetailsForm({...teacherDetailsForm,password:e.target.value})}
+            placeholder="Password"
+            className="w-full border px-3 py-2 rounded-lg"
+          />
 
-                {/* Divider */}
-                <div className="my-4 border-t border-gray-100"></div>
-
-                {/* Details */}
-                <div className="flex items-center justify-between">
-                  <span className="px-3 py-1 rounded-full bg-indigo-50 text-indigo-700 text-xs font-medium border border-indigo-100">
-                    {teacher.subject}
-                  </span>
-
-                  <span className="text-xs text-gray-400 uppercase tracking-wide">
-                    Teacher
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* Update Teacher Modal */}
-
-      {teacherUpdateModel && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black/40 backdrop-blur-sm z-50">
-          <div className="bg-white w-full max-w-md rounded-2xl shadow-xl p-6">
-            {/* Header */}
-
-            <div className="flex justify-between">
-              <h2 className="text-xl font-semibold text-gray-800 mb-6 text-center">
-                Update Teacher Details
-              </h2>
-
-              <div
-                className="cursor-pointer"
-                onClick={() => {
-                  showTeacherUpdateModel(false);
-                }}
-              >
-                <ImCross size={15} color="black" />
-              </div>
-            </div>
-
-            {/* Form */}
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-600 mb-1">
-                  Name
-                </label>
-                <input
-                  type="text"
-                  value={teacherDetailsForm.name || ""}
-                  onChange={(e)=>{setTeacherDetailsForm({...teacherDetailsForm,name:e.target.value})}}
-                  className="w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-600 mb-1">
-                  Username
-                </label>
-                <input
-                  type="text"
-                  value={teacherDetailsForm.username}
-                   onChange={(e)=>{setTeacherDetailsForm({...teacherDetailsForm,username:e.target.value})}}
-                  className="w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-600 mb-1">
-                  Password
-                </label>
-                <input
-                  type="password"
-                  value={teacherDetailsForm.password}
-                  onChange={(e)=>{setTeacherDetailsForm({...teacherDetailsForm,password:e.target.value})}}
-                  className="w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-600 mb-1">
-                  Subject
-                </label>
-                <input
-                  type="text"
-                  value={teacherDetailsForm.subject}
-                  onChange={(e)=>{setTeacherDetailsForm({...teacherDetailsForm,subject:e.target.value})}}
-                  className="w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                />
-              </div>
-            </div>
-
-            {/* Actions */}
-            <div className="flex justify-end gap-3 mt-6">
-              <button className="px-5 py-2 rounded-xl text-gray-600 hover:bg-gray-100 transition">
-                Cancel
-              </button>
-
-              <button 
-              onClick={()=>(setTeacherDetailsForm({...teacherDetailsForm,teacherId:teacherId}),updateTeacher())}
-              className="px-6 py-2 rounded-xl bg-blue-600 text-white font-medium hover:bg-blue-700 transition shadow-md">
-                Save Changes
-              </button>
-            </div>
-          </div>
+          <input
+            value={teacherDetailsForm.subject || ""}
+            onChange={(e)=>setTeacherDetailsForm({...teacherDetailsForm,subject:e.target.value})}
+            placeholder="Subject"
+            className="w-full border px-3 py-2 rounded-lg"
+          />
         </div>
-      )}
-    </>
+
+        <div className="flex flex-col sm:flex-row gap-2 mt-5">
+          <button className="w-full sm:w-auto px-4 py-2 border rounded-lg">
+            Cancel
+          </button>
+
+          <button
+            onClick={()=>{
+              setTeacherDetailsForm({...teacherDetailsForm,teacherId});
+              updateTeacher();
+            }}
+            className="w-full sm:w-auto px-5 py-2 bg-blue-600 text-white rounded-lg"
+          >
+            Save
+          </button>
+        </div>
+      </div>
+    </div>
+  )}
+</>
   );
 }
