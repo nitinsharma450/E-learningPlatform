@@ -1,0 +1,26 @@
+name: Docker CICD
+
+on:
+  push:
+    branches: ["main"]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: node intall
+        run: echo 'installing node modules' && npm install
+
+      - name: build
+        run: echo 'build started' && npm run build
+
+
+      - name: docker build
+        run: docker compose build
+
+      - name :run docker containers
+        run: docker compose up -d
+

@@ -20,7 +20,7 @@ export default function TeacherAddListing() {
   const [teacherId,setteacherId]=useState<any>(String)
   const [showTeacherdetails, setTeacherDetails] = useState<any>([]);
   const [loading, setLoading] = useState(false);
-  const [loadingSubject, setLoadingSubject] = useState<Boolean>(false);
+ 
   const [title, setTitles] = useState<any[]>([]);
   const [teacherDetailsForm, setTeacherDetailsForm] = useState<any>({});
   const [teacherUpdateModel, showTeacherUpdateModel] = useState(false);
@@ -30,7 +30,7 @@ export default function TeacherAddListing() {
   // ✅ Fetch all subjects (titles)
   async function fetchTitles() {
     try {
-      setLoadingSubject(true);
+     
       if (await AuthenticationService.isAuthenticated()) {
         const response = await Api("course/searchTitles");
         if (response.status === 200) {
@@ -40,9 +40,7 @@ export default function TeacherAddListing() {
     } catch (err) {
       console.error("Error fetching titles:", err);
       toast.error("Failed to load course titles");
-    } finally {
-      setLoadingSubject(false);
-    }
+    } 
   }
 
   // ✅ Add teacher with validation
